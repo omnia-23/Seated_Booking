@@ -1,9 +1,11 @@
 import mongoose from "mongoose";
+import mongooseSequence from "mongoose-sequence";
+
+const AutoIncrement = mongooseSequence(mongoose);
 
 const stationsSchema = mongoose.Schema({
   Governorate_ID: {
     type: Number,
-    required: true,
     unique: true,
   },
   Governorate_Name: {
@@ -11,8 +13,7 @@ const stationsSchema = mongoose.Schema({
     required: true,
   },
   City_ID: {
-    type: String,
-    required: true,
+    type: Number,
     unique: true,
   },
   City_Name: {
@@ -21,7 +22,6 @@ const stationsSchema = mongoose.Schema({
   },
   Station_ID: {
     type: Number,
-    required: true,
     unique: true,
   },
   Station_Name: {
@@ -34,8 +34,15 @@ const stationsSchema = mongoose.Schema({
   },
   Active_Station: {
     type: Boolean,
-    default: false,
+    default: true,
   },
+});
+
+stationsSchema.plugin(AutoIncrement, { inc_field: "Governorate_ID" });
+stationsSchema.plugin(AutoIncrement, { inc_field: "City_ID", start_seq: 100 });
+stationsSchema.plugin(AutoIncrement, {
+  inc_field: "Station_ID",
+  start_seq: 1000,
 });
 
 export const stationsModel = mongoose.model("Stations", stationsSchema);

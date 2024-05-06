@@ -2,11 +2,12 @@ import mongoose from "mongoose";
 
 const connectionToDB = () => {
   mongoose
-    .connect(process.env.MONGO_DB, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-      dbName: "SeatedBooking",
-    })
+    .connect("mongodb://localhost:27017/SeatedBooking")
+    // .connect(process.env.MONGO_DB, {
+    //   useNewUrlParser: true,
+    //   useUnifiedTopology: true,
+    //   dbName: "SeatedBooking",
+    // })
     // .connect(process.env.MONGO_URL, {
     //   useNewUrlParser: true,
     //   useUnifiedTopology: true,

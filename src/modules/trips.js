@@ -1,65 +1,26 @@
 import mongoose from "mongoose";
 
+import mongooseSequence from "mongoose-sequence";
+const AutoIncrement = mongooseSequence(mongoose);
+
 const tripSchema = mongoose.Schema({
   Trip_ID: {
     type: Number,
-    required: true,
     unique: true,
   },
-  Boarding_Governorate_ID: {
-    type: Number,
+  Boarding_Station: {
+    type: mongoose.Types.ObjectId,
+    ref: "Stations",
     required: true,
   },
-  Boarding_Governorate_Name: {
-    type: String,
-    required: true,
-  },
-  Boarding_City_ID: {
-    type: Number,
-    required: true,
-  },
-  Boarding_City_Name: {
-    type: String,
-    required: true,
-  },
-  Boarding_Station_ID: {
-    type: Number,
-    required: true,
-  },
-  Boarding_Station_Name: {
-    type: String,
-    required: true,
-  },
-  Destination_Governorate_ID: {
-    type: Number,
-    required: true,
-  },
-  Destination_Governorate_Name: {
-    type: String,
-    required: true,
-  },
-  Destination_City_ID: {
-    type: Number,
-    required: true,
-  },
-  Destination_City_Name: {
-    type: String,
-    required: true,
-  },
-  Destination_Station_ID: {
-    type: Number,
-    required: true,
-  },
-  Destination_Station_Name: {
-    type: String,
+  Destination_Station: {
+    type: mongoose.Types.ObjectId,
+    ref: "Stations",
     required: true,
   },
   Organization_ID: {
-    type: Number,
-    required: true,
-  },
-  Organization_Name: {
-    type: String,
+    type: mongoose.Types.ObjectId,
+    ref: "Organizations",
     required: true,
   },
   Trip_Start_Date: {
@@ -71,19 +32,8 @@ const tripSchema = mongoose.Schema({
     required: true,
   },
   Vehicle_ID: {
-    type: Number,
-    required: true,
-  },
-  Vehicle_Name: {
-    type: String,
-    required: true,
-  },
-  Vehicle_Class: {
-    type: String,
-    required: true,
-  },
-  Vehicle_Type: {
-    type: String,
+    type: mongoose.Types.ObjectId,
+    ref: "Vehicles",
     required: true,
   },
   Seat_Price: {
@@ -95,5 +45,7 @@ const tripSchema = mongoose.Schema({
     required: true,
   },
 });
+
+tripSchema.plugin(AutoIncrement, { inc_field: "Trip_ID" });
 
 export const tripsModel = mongoose.model("Trips", tripSchema);

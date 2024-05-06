@@ -16,9 +16,20 @@ function fileFilter(req, file, cb) {
   }
 }
 
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, path.join(__dirname, "uploads"));
+  },
+  filename: (req, file, cb) => {
+    const timestamp = Date.now();
+    const extension = path.extname(file.originalname).toLowerCase();
+    const basename = path.basename(file.originalname, extension);
+    cb(null, `${basename}-${timestamp}${extension}`);
+  },
+});
 
 const upload = multer({
-  dest: "/uploads",
+  storage,
   fileFilter: fileFilter,
 });
 

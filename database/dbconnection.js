@@ -1,9 +1,8 @@
 import mongoose from "mongoose";
-import dotenv from "dotenv";
 
 const connectionToDB = () => {
   mongoose
-    .connect("mongodb://localhost:27017/SeatedBooking")
+    .connect(process.env.MONGO_DB)
     // .connect(process.env.MONGO_URL, {
     //   useNewUrlParser: true,
     //   useUnifiedTopology: true,
@@ -14,6 +13,5 @@ const connectionToDB = () => {
       console.error(err);
     });
 };
-
 
 export default connectionToDB;

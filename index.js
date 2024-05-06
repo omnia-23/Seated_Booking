@@ -21,6 +21,10 @@ app.use("/users", userRouter);
 app.use("/org", orgRouter);
 app.use("/permissions", permissionRouter);
 
+app.get("/", (req, res, next) => {
+  res.send("Server is running");
+});
+
 app.use((error, req, res, next) => {
   const { message, status } = error;
   res.status(status || 500).json({ message });

@@ -1,12 +1,15 @@
 import mongoose from "mongoose";
-
+import dotenv from "dotenv";
 const connectionToDB = () => {
   mongoose
-    .connect("mongodb://localhost:27017/SeatedBooking")
-    .then(() => console.log("Connected to database"))
+    .connect(process.env.MONGO_URL, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      dbName: "SeatsBooking",
+    })
+    .then(() => console.log("Connected Successfully"))
     .catch((err) => {
-      console.log(err);
+      console.error(err);
     });
 };
-
 export default connectionToDB;

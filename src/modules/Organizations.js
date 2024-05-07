@@ -45,7 +45,11 @@ const OrganizationsSchema = new mongoose.Schema({
     required: false,
   },
   OrganizationAttachements: {
-    type: mongoose.Schema.Types.Mixed,
+    type: Array,
+    required: false,
+  },
+  OrgaizationImage: {
+    type: String,
     required: false,
   },
   dateTime: {

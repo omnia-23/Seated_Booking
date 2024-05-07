@@ -4,6 +4,7 @@ import User from "../modules/Users.js";
 import Permission from "../modules/Permissions.js";
 import userAuthority from "../utils/checkAuthority.js";
 import userRole from "../utils/checkRole.js";
+import tokenUtil from "../utils/tokenUtil.js";
 
 //create org admin user
 export const createOrgAdmin = async (req, res) => {
@@ -109,7 +110,6 @@ export const signin = async (req, res) => {
     // Find user by username
     const user = await User.findOne({ UserEmail });
     if (!user) {
-      // return res.status(401).json({ error: "Invalid email or password" });
       return res.status(401).json({
         message: "failed",
         data: "No data",
@@ -117,30 +117,17 @@ export const signin = async (req, res) => {
     }
     const role = await userRole.getRole(user._id);
     const userObj = user.toObject();
-    // Attach role to user object
     userObj.role = role;
-    // Compare passwords
-    const isPasswordValid = await bcrypt.compare(
-      UserPassword,
-      user.UserPassword
+    const token = jwt.sign(
+      { userId: user._id, orgId: user.OrganizationID, userRole: role },
+      process.env.JWT_SECRET
     );
-    if (!isPasswordValid) {
-      return res.status(401).json({ error: "Invalid email or password" });
-      // return res.status(401).json({
-      //   message: "failed",
-      //   data: "No data",
-      // });
-    }
-    // Generate JWT token
-    const token = jwt.sign({ userID: user._id }, process.env.JWT_SECRET);
-    // res.status(200).json({ token });
     return res.status(200).json({
       message: "success",
       data: userObj,
       token: token,
     });
   } catch (error) {
-    // res.status(400).json({ error: error.message });
     return res.status(400).json({
       message: "failed",
       data: "No data",
@@ -151,7 +138,9 @@ export const signin = async (req, res) => {
 // Get all users
 export const getAllUsers = async (req, res) => {
   try {
-    const userId = req.params.userId;
+    const token = req.headers.authorization.split(" ")[1];
+    // console.log(token);
+    const userId = tokenUtil.verifyAndExtract(token).userId;
     // Check if the user has authority
     const IsSuperAdmin = await userAuthority.checkPermission(
       userId,
@@ -171,11 +160,11 @@ export const getAllUsers = async (req, res) => {
       data: users,
     });
   } catch (error) {
-    // res.status(500).json({ error: error.message });
-    return res.status(500).json({
-      message: "failed",
-      data: "No data",
-    });
+    res.status(500).json({ error: error.message });
+    // return res.status(500).json({
+    //   message: "failed",
+    //   data: "No data",
+    // });
   }
 };
 
@@ -241,8 +230,10 @@ export const getUserById = async (req, res) => {
 // Update user by ID
 export const updateUser = async (req, res) => {
   try {
-    if (req.body._id === req.params.userId) {
-      const user = await User.findByIdAndUpdate(req.params.userId, req.body, {
+    const token = req.headers.authorization.split(" ")[1];
+    const userId = tokenUtil.verifyAndExtract(token).userId;
+    if (req.body._id === userId) {
+      const user = await User.findByIdAndUpdate(userId, req.body, {
         new: true,
       });
       if (!user) {
@@ -276,9 +267,11 @@ export const updateUser = async (req, res) => {
 // Delete user by ID
 export const deleteUser = async (req, res) => {
   try {
-    if (req.body._id === req.params.userId) {
+    const token = req.headers.authorization.split(" ")[1];
+    const userId = tokenUtil.verifyAndExtract(token).userId;
+    if (req.body._id === userId) {
       const user = await User.findByIdAndUpdate(
-        req.params.userId,
+        userId,
         { UserStatus: false },
         { new: true }
       );

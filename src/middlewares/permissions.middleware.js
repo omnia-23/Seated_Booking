@@ -1,9 +1,12 @@
 import Permission from "../modules/Permissions.js";
 import userAuthority from "../utils/checkAuthority.js";
+import jwt from "jsonwebtoken";
+import tokenUtil from "../utils/tokenUtil.js";
 
 // Create a new permission
 export const createPermission = async (req, res) => {
-  const userId = req.params.userId;
+  const token = req.headers.authorization.split(" ")[1];
+  const userId = tokenUtil.verifyAndExtract(token).userId;
   // Check if the user has authority
   const IsSuperAdmin = await userAuthority.checkPermission(
     userId,
@@ -27,7 +30,8 @@ export const createPermission = async (req, res) => {
 
 // Get all permissions
 export const getAllPermissions = async (req, res) => {
-  const userId = req.params.userId;
+  const token = req.headers.authorization.split(" ")[1];
+  const userId = tokenUtil.verifyAndExtract(token).userId;
   // Check if the user has authority
   const IsSuperAdmin = await userAuthority.checkPermission(
     userId,
@@ -64,7 +68,8 @@ export const getPermissionById = async (req, res) => {
 // Update permission by ID
 export const updatePermission = async (req, res) => {
   try {
-    const userId = req.params.userId;
+    const token = req.headers.authorization.split(" ")[1];
+    const userId = tokenUtil.verifyAndExtract(token).userId;
     // Check if the user has authority
     const IsSuperAdmin = await userAuthority.checkPermission(
       userId,
@@ -95,7 +100,8 @@ export const updatePermission = async (req, res) => {
 // Delete permission by ID
 export const deletePermission = async (req, res) => {
   try {
-    const userId = req.params.userId;
+    const token = req.headers.authorization.split(" ")[1];
+    const userId = tokenUtil.verifyAndExtract(token).userId;
     // Check if the user has authority
     const IsSuperAdmin = await userAuthority.checkPermission(
       userId,

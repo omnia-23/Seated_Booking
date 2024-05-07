@@ -11,10 +11,10 @@ import {
 } from "../middlewares/organizations.middleware.js";
 
 // Create a new organization
-router.post("/:userId", createOrganization);
+router.post("/", createOrganization);
 
 // Get all organizations
-router.get("/:userId/all", getAllOrganizations);
+router.get("/all", getAllOrganizations);
 
 // Get organization by ID
 router.get("/:id", getOrganizationById);
@@ -23,9 +23,9 @@ router.get("/:id", getOrganizationById);
 router.get("/name/:name", getOrganizationByName);
 
 // Update organization by ID
-router.put("/:userId/:id", updateOrganization);
+router.put("/:id", updateOrganization);
 
 // Delete organization by ID
-router.delete("/:userId/:id", deleteOrganization);
+router.delete("/:id", deleteOrganization);
 
 export default router;

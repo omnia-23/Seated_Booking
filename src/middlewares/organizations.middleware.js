@@ -1,10 +1,13 @@
+import { token } from "morgan";
 import Organization from "../modules/Organizations.js";
 import userAuthority from "../utils/checkAuthority.js";
-
+import jwt from "jsonwebtoken";
+import tokenUtil from "../utils/tokenUtil.js";
 // Create a new organization
 export const createOrganization = async (req, res) => {
   try {
-    const userId = req.params.userId;
+    const token = req.headers.authorization.split(" ")[1];
+    const userId = tokenUtil.verifyAndExtract(token).userId;
     // Check if the user has authority
     const IsSuperAdmin = await userAuthority.checkPermission(
       userId,
@@ -37,7 +40,8 @@ export const createOrganization = async (req, res) => {
 // Get all organizations
 export const getAllOrganizations = async (req, res) => {
   try {
-    const userId = req.params.userId;
+    const token = req.headers.authorization.split(" ")[1];
+    const userId = tokenUtil.verifyAndExtract(token).userId;
     // Check if the user has authority
     const IsSuperAdmin = await userAuthority.checkPermission(
       userId,
@@ -118,7 +122,8 @@ export const getOrganizationByName = async (req, res) => {
 // Update organization by ID
 export const updateOrganization = async (req, res) => {
   try {
-    const userId = req.params.userId;
+    const token = req.headers.authorization.split(" ")[1];
+    const userId = tokenUtil.verifyAndExtract(token).userId;
 
     // Check if the user has authority
     const IsSuperAdmin = await userAuthority.checkPermission(
@@ -172,7 +177,8 @@ export const updateOrganization = async (req, res) => {
 // Delete(inactive) organization by ID
 export const deleteOrganization = async (req, res) => {
   try {
-    const userId = req.params.userId;
+    const token = req.headers.authorization.split(" ")[1];
+    const userId = tokenUtil.verifyAndExtract(token).userId;
 
     // Check if the user has authority
     const IsSuperAdmin = await userAuthority.checkPermission(

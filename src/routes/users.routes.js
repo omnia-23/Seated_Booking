@@ -12,7 +12,7 @@ import {
 } from "../middlewares/users.middleware.js";
 
 // Create a new org admin
-router.post("/:userId/orgAdmin", createOrgAdmin);
+router.post("/orgAdmin", createOrgAdmin);
 
 // Sign up new user
 router.post("/signup", signup);
@@ -21,7 +21,7 @@ router.post("/signup", signup);
 router.post("/signin", signin);
 
 // Get all users
-router.get("/:userId/all", getAllUsers);
+router.get("/all", getAllUsers);
 
 // Get user by ID
 router.get("/:id", getUserById);
@@ -33,9 +33,9 @@ router.get("/:id", getUserById);
 // router.get("/:id/organization", getOrganizationForUser);
 
 // Update user by ID
-router.put("/:userId", updateUser);
+router.put("/", updateUser);
 
 // Delete user by ID
-router.delete("/:userId", deleteUser);
+router.delete("/", deleteUser);
 
 export default router;

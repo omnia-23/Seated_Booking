@@ -2,13 +2,21 @@ import { AppError, catchError } from "../utils/errorHandler.js";
 import { stationsModel } from "../modules/stations.js";
 
 export const getStations = catchError(async (req, res, next) => {
-  const stations = await stationsModel.find();
-  if (stations)
+  let stations = await stationsModel.find();
+  if (stations) {
+    stations = stations
+      .filter((el) => el.Active_Station)
+      .map((el) => ({
+        station_id: el.Station_ID,
+        station_name: `${el.Governorate_Name} - ${el.Station_Name}`,
+      }));
     res.status(200).json({
       message: "Success",
-      data: stations,
+      data: {
+        stations,
+      },
     });
-  else
+  } else
     res.status(204).json({
       message: "Success",
       data: "No data Found",

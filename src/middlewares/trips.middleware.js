@@ -55,7 +55,11 @@ export const searchTrips = catchError(async (req, res, next) => {
 });
 
 export const getTrips = catchError(async (req, res, next) => {
-  const trips = await tripsModel.find();
+  const trips = await tripsModel
+    .find()
+    .populate({ path: "Vehicle_ID", populate: { path: "Organization_ID" } })
+    .populate("Boarding_Station")
+    .populate("Destination_Station");
   if (trips)
     res.status(200).json({
       message: "Success",

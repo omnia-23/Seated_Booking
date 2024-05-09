@@ -2,7 +2,9 @@ import { seatsModel } from "../modules/seats.js";
 import { AppError, catchError } from "../utils/errorHandler.js";
 
 export const getSeats = catchError(async (req, res, next) => {
-  let seats = await seatsModel.find({ Active_Seat: true });
+  let seats = await seatsModel
+    .find({ Active_Seat: true })
+    .populate("Vehicle_ID");
   if (seats) {
     res.status(200).json({
       message: "Success",

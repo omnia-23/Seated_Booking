@@ -4,9 +4,45 @@ import { seatsModel } from "../modules/seats.js";
 import tokenUtil from "../utils/tokenUtil.js";
 import { tripsModel } from "../modules/trips.js";
 
-//TODO : handle how see tickets
+export const getHistory = catchError(async (req, res, next) => {
+  const token = req.headers.authorization.split(" ")[1];
+  let User_ID = tokenUtil.verifyAndExtract(token).userId;
+
+  const tickets = await ticketModel
+    .find({ User_ID })
+    .populate({
+      path: "Trip_ID",
+      populate: [
+        { path: "Boarding_Station" },
+        { path: "Destination_Station" },
+        { path: "Organization_ID" },
+      ],
+    })
+    .populate("Seat_Number");
+  if (tickets) {
+    res.status(200).json({
+      message: "Success",
+      data: tickets,
+    });
+  } else
+    res.status(204).json({
+      message: "Success",
+      data: "No data Found",
+    });
+});
+
 export const getTickets = catchError(async (req, res, next) => {
-  let tickets = await ticketModel.find();
+  const tickets = await ticketModel
+    .find()
+    .populate({
+      path: "Trip_ID",
+      populate: [
+        { path: "Boarding_Station" },
+        { path: "Destination_Station" },
+        { path: "Organization_ID" },
+      ],
+    })
+    .populate("Seat_Number");
   if (tickets) {
     res.status(200).json({
       message: "Success",
@@ -21,7 +57,17 @@ export const getTickets = catchError(async (req, res, next) => {
 
 export const getTicket = catchError(async (req, res, next) => {
   let { id } = req.params;
-  let tickets = await ticketModel.findById(id);
+  let tickets = await ticketModel
+    .findById(id)
+    .populate({
+      path: "Trip_ID",
+      populate: [
+        { path: "Boarding_Station" },
+        { path: "Destination_Station" },
+        { path: "Organization_ID" },
+      ],
+    })
+    .populate("Seat_Number");
   if (tickets) {
     res.status(200).json({
       message: "Success",
@@ -40,7 +86,7 @@ export const addTicket = catchError(async (req, res, next) => {
   const { Trip_ID, Seats_Count } = req.body;
   let { Vehicle_ID } = await tripsModel.findById(Trip_ID);
   let seats = await seatsModel
-    .find({ Vehicle_ID, Status_Booked: false })
+    .find({ Vehicle_ID, Active_Seat: true, Status_Booked: false })
     .limit(Seats_Count);
   if (seats.length < Seats_Count) {
     res.status(200).json({
@@ -74,31 +120,44 @@ export const addTicket = catchError(async (req, res, next) => {
   else next(new AppError("Something went Wrong ", 404));
 });
 
-export const updateTicket = catchError(async (req, res, next) => {
-  const { id } = req.params;
-  const ticket = await ticketModel.findByIdAndUpdate(id, req.body, {
-    new: true,
-  });
-  if (ticket) {
-    res.status(200).json({
-      message: "Success",
-      data: ticket,
-    });
-  } else {
-    res.status(204).json({
-      message: "Success",
-      data: "No data Found",
-    });
-  }
-});
+// export const updateTicket = catchError(async (req, res, next) => {
+//   const { id } = req.params;
+//   const ticket = await ticketModel.findByIdAndUpdate(id, req.body, {
+//     new: true,
+//   });
+//   if (ticket) {
+//     res.status(200).json({
+//       message: "Success",
+//       data: ticket,
+//     });
+//   } else {
+//     res.status(204).json({
+//       message: "Success",
+//       data: "No data Found",
+//     });
+//   }
+// });
 
 export const deleteTicket = catchError(async (req, res, next) => {
   const { id } = req.params;
-  const ticket = await ticketModel.findByIdAndDelete(id);
+  const token = req.headers.authorization.split(" ")[1];
+  const ticket = await ticketModel.findById(id);
   if (ticket) {
+    if (tokenUtil.verifyAndExtract(token).userId !== ticket.User_ID)
+      res.status(401).json({
+        message: "unauthorized",
+      });
+    await seatsModel.findByIdAndUpdate(
+      ticket.Seat_Number,
+      {
+        Status_Booked: false,
+      },
+      { new: true }
+    );
+    await ticketModel.deleteOne({ _id: id });
     res.status(200).json({
       message: "Success",
-      data: ticket,
+      data: "Ticket Deleted Successfully",
     });
   } else {
     res.status(204).json({

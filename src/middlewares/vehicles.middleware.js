@@ -3,7 +3,7 @@ import { AppError, catchError } from "../utils/errorHandler.js";
 import tokenUtil from "../utils/tokenUtil.js";
 
 export const getVehicles = catchError(async (req, res, next) => {
-  const vehicles = await vehiclesModel.find();
+  const vehicles = await vehiclesModel.find().populate("Organization_ID");
   if (vehicles)
     res.status(200).json({
       message: "Success",

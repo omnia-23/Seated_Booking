@@ -110,7 +110,7 @@ export const signin = async (req, res) => {
     // Find user by username
     const user = await User.findOne({ UserEmail });
     if (!user) {
-      res.status(400).json({ error: error.message });
+      res.status(400).json({ error: "User not found" });
       // return res.status(401).json({
       //   message: "failed",
       //   data: "No data",
@@ -126,7 +126,7 @@ export const signin = async (req, res) => {
       //   message: "failed",
       //   data: "No data",
       // });
-      res.status(401).json({ error: error.message });
+      res.status(401).json({ error: "password not valid" });
     }
     const role = await userRole.getRole(user._id);
     const userObj = user.toObject();

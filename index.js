@@ -7,6 +7,8 @@ import orgRouter from "./src/routes/organizations.routes.js";
 import permissionRouter from "./src/routes/permissions.routes.js";
 import dotenv from "dotenv";
 import tripsRouter from "./src/routes/trips.routes.js";
+import seatsRouter from "./src/routes/seats.routes.js";
+import ticketRouter from "./src/routes/ticket.routes.js";
 
 const app = express();
 dotenv.config();
@@ -16,6 +18,8 @@ app.use(express.json());
 app.use("/stations", stationsRouter);
 app.use("/vehicles", vehiclesRouter);
 app.use("/trips", tripsRouter);
+app.use("/seats", seatsRouter);
+app.use("/ticket", ticketRouter);
 
 app.use("/users", userRouter);
 app.use("/org", orgRouter);

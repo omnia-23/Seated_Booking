@@ -7,6 +7,7 @@ export const getStations = catchError(async (req, res, next) => {
     stations = stations
       .filter((el) => el.Active_Station)
       .map((el) => ({
+        _id: el._id,
         station_id: el.Station_ID,
         station_name: `${el.Governorate_Name} - ${el.Station_Name}`,
       }));
@@ -53,7 +54,13 @@ export const updateStations = catchError(async (req, res, next) => {
 
 export const deleteStations = catchError(async (req, res, next) => {
   const { id } = req.params;
-  const station = await stationsModel.findByIdAndDelete(id);
+  const station = await stationsModel.findByIdAndUpdate(
+    id,
+    {
+      Active_Station: false,
+    },
+    { new: true }
+  );
   if (station) {
     res.status(200).json({
       message: "Success",

@@ -1,5 +1,6 @@
 import { vehiclesModel } from "../modules/vehicles.js";
 import { AppError, catchError } from "../utils/errorHandler.js";
+import tokenUtil from "../utils/tokenUtil.js";
 
 export const getVehicles = catchError(async (req, res, next) => {
   const vehicles = await vehiclesModel.find();
@@ -16,6 +17,8 @@ export const getVehicles = catchError(async (req, res, next) => {
 });
 
 export const addVehicles = catchError(async (req, res, next) => {
+  const token = req.headers.authorization.split(" ")[1];
+  req.body.Organization_ID = tokenUtil.verifyAndExtract(token).orgId;
   const vehicles = await vehiclesModel.create(req.body);
   if (vehicles)
     res.status(200).json({
@@ -45,7 +48,11 @@ export const updateVehicles = catchError(async (req, res, next) => {
 
 export const deleteVehicles = catchError(async (req, res, next) => {
   const { id } = req.params;
-  const station = await vehiclesModel.findByIdAndDelete(id);
+  const station = await vehiclesModel.findByIdAndUpdate(
+    id,
+    { Active_Vehicle: false },
+    { new: true }
+  );
   if (station) {
     res.status(200).json({
       message: "Success",

@@ -11,7 +11,7 @@ const isObjectId = (value, helpers) => {
 export const addSeatSchema = Joi.object({
   Vehicle_ID: Joi.string().custom(isObjectId, "ObjectId validation").required(),
   Seat_Number: Joi.string().required(),
-  Seat_description: Joi.string(),
+  Seat_description: Joi.string().optional(),
   Seat_Price: Joi.number().required(),
   Active_Seat: Joi.boolean(),
 });

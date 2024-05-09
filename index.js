@@ -9,11 +9,13 @@ import dotenv from "dotenv";
 import tripsRouter from "./src/routes/trips.routes.js";
 import seatsRouter from "./src/routes/seats.routes.js";
 import ticketRouter from "./src/routes/ticket.routes.js";
+import cors from "cors";
 
 const app = express();
 dotenv.config();
 dbConnection();
 app.use(express.json());
+app.use(cors());
 
 app.use("/stations", stationsRouter);
 app.use("/vehicles", vehiclesRouter);

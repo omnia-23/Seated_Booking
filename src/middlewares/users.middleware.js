@@ -110,22 +110,24 @@ export const signin = async (req, res) => {
     // Find user by username
     const user = await User.findOne({ UserEmail });
     if (!user) {
-      return res.status(401).json({
-        message: "failed",
-        data: "No data",
-      });
+      res.status(400).json({ error: "User not found" });
+      // return res.status(401).json({
+      //   message: "failed",
+      //   data: "No data",
+      // });
     }
-        // Compare passwords
-        const isPasswordValid = await bcrypt.compare(
-          UserPassword,
-          user.UserPassword
-        );
-        if (!isPasswordValid) {
-          return res.status(401).json({
-            message: "failed",
-            data: "No data",
-          });
-        }
+    // Compare passwords
+    const isPasswordValid = await bcrypt.compare(
+      UserPassword,
+      user.UserPassword
+    );
+    if (!isPasswordValid) {
+      // return res.status(401).json({
+      //   message: "failed",
+      //   data: "No data",
+      // });
+      res.status(401).json({ error: "password not valid" });
+    }
     const role = await userRole.getRole(user._id);
     const userObj = user.toObject();
     userObj.role = role;
@@ -139,10 +141,11 @@ export const signin = async (req, res) => {
       token: token,
     });
   } catch (error) {
-    return res.status(400).json({
-      message: "failed",
-      data: "No data",
-    });
+    // return res.status(400).json({
+    //   message: "failed",
+    //   data: "No data",
+    // });
+    res.status(400).json({ error: error.message });
   }
 };
 

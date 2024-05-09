@@ -1,31 +1,26 @@
 import mongoose from "mongoose";
+import mongooseSequence from "mongoose-sequence";
+const AutoIncrement = mongooseSequence(mongoose);
 
 const ticketSchema = mongoose.Schema({
   User_ID: {
-    type: Number,
+    type: mongoose.Types.ObjectId,
+    ref: "Users",
     required: true,
-  },
-  Username: {
-    type: String,
-    required: true,
-  },
-  Booking_ID: {
-    type: Number,
-    required: true,
-    unique: true,
   },
   PNR: {
     type: Number,
-    unique: true,
+    required: true,
+  },
+  Trip_ID: {
+    type: mongoose.Types.ObjectId,
+    ref: "Trips",
     required: true,
   },
   Seat_Number: {
-    type: Number,
+    type: mongoose.Types.ObjectId,
+    ref: "Seats",
     unique: true,
-    required: true,
-  },
-  Seat_Price: {
-    type: mongoose.Decimal128,
     required: true,
   },
   Passenger_Name: {
@@ -40,87 +35,13 @@ const ticketSchema = mongoose.Schema({
     type: Number,
     required: true,
   },
-  Trip_ID: {
-    type: Number,
-    required: true,
-  },
-  Boarding_Governorate_ID: {
-    type: Number,
-    required: true,
-  },
-  Boarding_Governorate_Name: {
-    type: String,
-    required: true,
-  },
-  Boarding_City_ID: {
-    type: Number,
-    required: true,
-  },
-  Boarding_City_Name: {
-    type: String,
-    required: true,
-  },
-  Boarding_Station_ID: {
-    type: Number,
-    required: true,
-  },
-  Boarding_Station_Name: {
-    type: String,
-    required: true,
-  },
-  Destination_Governorate_ID: {
-    type: Number,
-    required: true,
-  },
-  Destination_Governorate_Name: {
-    type: String,
-    required: true,
-  },
-  Destination_City_ID: {
-    type: Number,
-    required: true,
-  },
-  Destination_City_Name: {
-    type: String,
-    required: true,
-  },
-  Destination_Station_ID: {
-    type: Number,
-    required: true,
-  },
-  Destination_Station_Name: {
-    type: String,
-    required: true,
-  },
   Organization_ID: {
-    type: Number,
-    required: true,
-  },
-  Organization_Name: {
-    type: String,
-    required: true,
-  },
-  Vehicle_ID: {
-    type: Number,
-    required: true,
-  },
-  Vehicle_Name: {
-    type: String,
-    required: true,
-  },
-  //* ask about Array type
-  Vehicle_Class: {
-    type: [String],
-    required: true,
-  },
-  //*  ask about Array type
-  Vehicle_Type: {
-    type: [String],
+    type: mongoose.Types.ObjectId,
+    ref: "Organizations",
     required: true,
   },
   Trip_Notes: {
     type: String,
-    required: true,
   },
 });
 

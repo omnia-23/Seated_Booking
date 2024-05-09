@@ -2,11 +2,8 @@ import mongoose from "mongoose";
 
 const seatsSchema = mongoose.Schema({
   Vehicle_ID: {
-    type: Number,
-    required: true,
-  },
-  Vehicle_Name: {
-    type: String,
+    type: mongoose.Types.ObjectId,
+    ref: "Vehicles",
     required: true,
   },
   Seat_Number: {
@@ -19,10 +16,14 @@ const seatsSchema = mongoose.Schema({
     required: true,
   },
   Seat_Price: {
-    type: mongoose.Decimal128,
+    type: Number,
     required: true,
   },
   Active_Seat: {
+    type: Boolean,
+    default: true,
+  },
+  Status_Booked: {
     type: Boolean,
     default: false,
   },

@@ -115,6 +115,17 @@ export const signin = async (req, res) => {
         data: "No data",
       });
     }
+        // Compare passwords
+        const isPasswordValid = await bcrypt.compare(
+          UserPassword,
+          user.UserPassword
+        );
+        if (!isPasswordValid) {
+          return res.status(401).json({
+            message: "failed",
+            data: "No data",
+          });
+        }
     const role = await userRole.getRole(user._id);
     const userObj = user.toObject();
     userObj.role = role;

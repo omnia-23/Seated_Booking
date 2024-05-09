@@ -1,9 +1,9 @@
-import { token } from "morgan";
 import Organization from "../modules/Organizations.js";
 import userAuthority from "../utils/checkAuthority.js";
 import jwt from "jsonwebtoken";
 import tokenUtil from "../utils/tokenUtil.js";
 // Create a new organization
+
 export const createOrganization = async (req, res) => {
   try {
     const token = req.headers.authorization.split(" ")[1];

@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-
 import mongooseSequence from "mongoose-sequence";
 const AutoIncrement = mongooseSequence(mongoose);
 
@@ -24,11 +23,11 @@ const tripSchema = mongoose.Schema({
     required: true,
   },
   Trip_Start_Date: {
-    type: Date,
+    type: String,
     required: true,
   },
   Trip_End_Date: {
-    type: Date,
+    type: String,
     required: true,
   },
   Vehicle_ID: {
@@ -37,7 +36,7 @@ const tripSchema = mongoose.Schema({
     required: true,
   },
   Seat_Price: {
-    type: mongoose.Decimal128,
+    type: Number,
     required: true,
   },
   Trip_Notes: {

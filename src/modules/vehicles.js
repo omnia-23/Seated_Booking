@@ -6,7 +6,7 @@ const vehiclesSchema = mongoose.Schema({
   Organization_ID: {
     type: mongoose.Types.ObjectId,
     ref: "Organizations",
-    // required: true,
+    required: true,
   },
   Vehicle_ID: {
     type: Number,

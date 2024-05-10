@@ -12,18 +12,23 @@ const PermissionsSchema = new mongoose.Schema({
     required: true,
     ref: "Organizations",
   },
-  OrganizationName: {
+  // OrganizationName: {
+  //   type: String,
+  //   required: true,
+  // },
+  UserMobileNumber: {
     type: String,
     required: true,
+    ref: "Users",
   },
   OrgAdminID: {
     type: String,
     required: true,
   },
-  UserStatus: {
-    type: Boolean,
-    required: true,
-  },
+  // UserStatus: {
+  //   type: Boolean,
+  //   required: true,
+  // },
   SuperAdmin: {
     type: Boolean,
     required: true,

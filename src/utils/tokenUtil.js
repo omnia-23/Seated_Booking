@@ -4,7 +4,7 @@ class tokenUtil {
   static verifyAndExtract(token) {
     try {
       const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
-      // console.log(decodedToken);
+      console.log(decodedToken);
       return decodedToken;
     } catch (error) {
       console.error("Error verifying token:", error);

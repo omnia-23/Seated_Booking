@@ -26,12 +26,6 @@ router.get("/all", getAllUsers);
 // Get user by ID
 router.get("/:id", getUserById);
 
-// // Get permission for a user by permission ID
-// router.get("/:id/permissions", getPermissionsForUser);
-
-// // Get organization for a user by org ID
-// router.get("/:id/organization", getOrganizationForUser);
-
 // Update user by ID
 router.put("/", updateUser);
 

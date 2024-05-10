@@ -9,7 +9,20 @@ import tokenUtil from "../utils/tokenUtil.js";
 //create org admin user
 export const createOrgAdmin = async (req, res) => {
   try {
-    let user;
+    const token = req.headers.authorization.split(" ")[1];
+    const userId = tokenUtil.verifyAndExtract(token).userId;
+    // Check if the user has authority
+    const IsSuperAdmin = await userAuthority.checkPermission(
+      userId,
+      "superAdmin"
+    );
+    if (!IsSuperAdmin) {
+      // return res.status(403).json({ error: "User does not have permission" });
+      return res.status(403).json({
+        message: "failed",
+        data: "No data",
+      });
+    }
     const { UserEmail, UserPassword } = req.body;
     const existingUser = await User.findOne({ UserEmail });
     if (existingUser) {
@@ -22,45 +35,30 @@ export const createOrgAdmin = async (req, res) => {
     // Hash the password
     const hashedPassword = await bcrypt.hash(UserPassword, 10);
 
-    // Check if permission with the same OrganizationID already exists
-    const OrganizationID = req.body.OrganizationID;
-    const existingPermission = await Permission.findOne({ OrganizationID });
+    // Create org admin permission
+    let orgAdmin_permission = {
+      OrganizationID: req.body.OrganizationID,
+      UserMobileNumber: req.body.UserMobileNumber,
+      OrgAdminID: req.body.OrgAdminID,
+      // UserStatus: true,
+      SuperAdmin: false,
+      OrganizationAdmin: true,
+      Merchant: false,
+      ServiceAgent: false,
+      FieldAgent: false,
+      InventoryWorker: false,
+      Consumer: false,
+    };
+    const permission = new Permission(orgAdmin_permission);
+    await permission.save();
 
-    if (!existingPermission) {
-      // Create org admin permission
-      let orgAdmin_permission = {
-        OrganizationID: OrganizationID,
-        OrganizationName: req.body.OrganizationName,
-        OrgAdminID: req.body.OrgAdminID,
-        UserStatus: true,
-        SuperAdmin: false,
-        OrganizationAdmin: true,
-        Merchant: false,
-        ServiceAgent: false,
-        FieldAgent: false,
-        InventoryWorker: false,
-        Consumer: false,
-      };
-      const permission = new Permission(orgAdmin_permission);
-      await permission.save();
-
-      const newAdmin = new User({
-        ...req.body,
-        UserPassword: hashedPassword,
-        PermissionID: permission._id,
-      });
-      await newAdmin.save();
-      res.status(201).json(newAdmin);
-    } else {
-      // existing permission
-      const newAdmin = new User({
-        ...req.body,
-        UserPassword: hashedPassword,
-        PermissionID: existingPermission._id,
-      });
-      await newAdmin.save();
-      res.status(201).json(newAdmin);
-    }
+    const newAdmin = new User({
+      ...req.body,
+      UserPassword: hashedPassword,
+      PermissionID: permission._id,
+    });
+    await newAdmin.save();
+    res.status(201).json(newAdmin);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
@@ -81,12 +79,29 @@ export const signup = async (req, res) => {
     }
     // Hash the password
     const hashedPassword = await bcrypt.hash(UserPassword, 10);
-    const consumerPermission = process.env.consumer_PermissionID;
-    // res.json(consumerPermission);
+
+    let consumer_permission = {
+      OrganizationID: process.env.superOrg_ID,
+      UserMobileNumber: req.body.UserMobileNumber,
+      OrgAdminID: process.env.superAdmin_ID,
+      // UserStatus: true,
+      SuperAdmin: false,
+      OrganizationAdmin: false,
+      Merchant: false,
+      ServiceAgent: false,
+      FieldAgent: false,
+      InventoryWorker: false,
+      Consumer: true,
+    };
+    const permission = new Permission(consumer_permission);
+    await permission.save();
+    // res.json(permission);
     const newUser = new User({
       ...req.body,
+      OrganizationID: process.env.superOrg_ID,
+      OrgAdminID: process.env.superAdmin_ID,
       UserPassword: hashedPassword,
-      PermissionID: consumerPermission,
+      PermissionID: permission._id,
     });
     await newUser.save();
     // res.status(201).json(newUser);
@@ -103,18 +118,59 @@ export const signup = async (req, res) => {
   }
 };
 
-// Sign in user
+// export const signin = async (req, res) => {
+
+//   try {
+//     const { UserEmail, UserPassword } = req.body;
+//     // Find user by username
+//     const user = await User.findOne({ UserEmail });
+//     console.log(UserEmail);
+//     console.log(user);
+//     if (!user) {
+//       res.status(400).json({ error: "User not found" });
+//     }
+//     // Compare passwords
+//     const isPasswordValid = await bcrypt.compare(
+//       UserPassword,
+//       user.UserPassword
+//     );
+//     if (!isPasswordValid) {
+//       res.status(401).json({ error: "Password not valid" });
+//     }
+//     const role = await userRole.getRole(user._id);
+//     const userObj = user.toObject();
+//     userObj.role = role;
+//     const token = jwt.sign(
+//       {
+//         userId: user._id,
+//         orgId: user.OrganizationID,
+//         userRole: role,
+//         permissionId: user.PermissionID,
+//       },
+//       process.env.JWT_SECRET
+//     );
+//     return res.status(200).json({
+//       message: "Success",
+//       data: userObj,
+//       token: token,
+//     });
+//   } catch (error) {
+//         // return res.status(400).json({
+//     //   message: "failed",
+//     //   data: "No data",
+//     // });
+//     res.status(400).json({ error: error.message });
+//   }
+// };
+
 export const signin = async (req, res) => {
   try {
     const { UserEmail, UserPassword } = req.body;
     // Find user by username
     const user = await User.findOne({ UserEmail });
+    console.log(user);
     if (!user) {
-      res.status(400).json({ error: "User not found" });
-      // return res.status(401).json({
-      //   message: "failed",
-      //   data: "No data",
-      // });
+      // res.status(400).json({ error: "User not found" });
     }
     // Compare passwords
     const isPasswordValid = await bcrypt.compare(
@@ -122,17 +178,18 @@ export const signin = async (req, res) => {
       user.UserPassword
     );
     if (!isPasswordValid) {
-      // return res.status(401).json({
-      //   message: "failed",
-      //   data: "No data",
-      // });
-      res.status(401).json({ error: "password not valid" });
+      // res.status(401).json({ error: "password not valid" });
     }
     const role = await userRole.getRole(user._id);
     const userObj = user.toObject();
     userObj.role = role;
     const token = jwt.sign(
-      { userId: user._id, orgId: user.OrganizationID, userRole: role },
+      {
+        userId: user._id,
+        orgId: user.OrganizationID,
+        userRole: role,
+        permissionId: user.PermissionID,
+      },
       process.env.JWT_SECRET
     );
     return res.status(200).json({
@@ -141,10 +198,6 @@ export const signin = async (req, res) => {
       token: token,
     });
   } catch (error) {
-    // return res.status(400).json({
-    //   message: "failed",
-    //   data: "No data",
-    // });
     res.status(400).json({ error: error.message });
   }
 };
@@ -206,40 +259,6 @@ export const getUserById = async (req, res) => {
     });
   }
 };
-
-// // Get permissions details for a user by permission ID
-// export const getPermissionsForUser = async (req, res) => {
-//   try {
-//     const user = await User.findById(req.params.id);
-//     if (!user) {
-//       return res.status(404).json({ error: "User not found" });
-//     }
-//     const permission = await Permission.findById(user.PermissionID);
-//     if (!permission) {
-//       return res.status(404).json({ error: "Permission not found" });
-//     }
-//     res.status(200).json(permission);
-//   } catch (error) {
-//     res.status(500).json({ error: error.message });
-//   }
-// };
-
-// // Get organization details for a user by org ID
-// export const getOrganizationForUser = async (req, res) => {
-//   try {
-//     const user = await User.findById(req.params.id);
-//     if (!user) {
-//       return res.status(404).json({ error: "User not found" });
-//     }
-//     const organization = await Organization.findById(user.OrganizationID);
-//     if (!organization) {
-//       return res.status(404).json({ error: "organization not found" });
-//     }
-//     res.status(200).json(organization);
-//   } catch (error) {
-//     res.status(500).json({ error: error.message });
-//   }
-// };
 
 // Update user by ID
 export const updateUser = async (req, res) => {

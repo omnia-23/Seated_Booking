@@ -1,39 +1,14 @@
-import multer from "multer";
-import path from "path";
+import { v2 as cloudinary } from "cloudinary";
 
 class uploadImg {
-  fileFilter(req, file, cb) {
-    const allowedMimeTypes = ["image/jpeg", "image/png"];
-
-    const isValidMimeType = allowedMimeTypes.includes(file.mimetype);
-    const isValidExtension = /\.(jpg|jpeg|png)$/.test(
-      path.extname(file.originalname).toLowerCase()
-    );
-
-    if (isValidMimeType && isValidExtension) {
-      cb(null, true);
-    } else {
-      cb(null, false);
-      cb(new Error("Only JPEG and PNG files are allowed!"));
+  static uploadImageToCloudinary = async (file) => {
+    try {
+      const result = await cloudinary.uploader.upload(file.path);
+      return result.secure_url;
+    } catch (error) {
+      console.error("Error uploading image to Cloudinary:", error);
+      throw error;
     }
-  }
+  };
 }
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, path.join(__dirname, "uploads"));
-  },
-  filename: (req, file, cb) => {
-    const timestamp = Date.now();
-    const extension = path.extname(file.originalname).toLowerCase();
-    const basename = path.basename(file.originalname, extension);
-    cb(null, `${basename}-${timestamp}${extension}`);
-  },
-});
-
-const upload = multer({
-  storage,
-  fileFilter: uploadImg.fileFilter,
-});
-
 export default uploadImg;

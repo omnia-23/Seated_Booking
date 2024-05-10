@@ -7,10 +7,10 @@ const UsersSchema = new mongoose.Schema({
     required: false,
     ref: "Organizations",
   },
-  OrganizationName: {
-    type: String,
-    required: false,
-  },
+  // OrganizationName: {
+  //   type: String,
+  //   required: false,
+  // },
   OrgAdminID: {
     type: String,
     required: false,
@@ -41,6 +41,19 @@ const UsersSchema = new mongoose.Schema({
     type: String,
     required: true,
     unique: true,
+  },
+  UserNationalID: {
+    type: String,
+    required: true,
+    unique: true,
+    validate: {
+      validator: function (v) {
+        // Check if UserNationalID is exactly 12 digits
+        return /^\d{12}$/.test(v);
+      },
+      message: (props) =>
+        `${props.value} is not a valid 12-digit UserNationalID!`,
+    },
   },
   UserEmail: {
     type: String,

@@ -174,11 +174,11 @@ export const getAllUsers = async (req, res) => {
       data: users,
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
-    // return res.status(500).json({
-    //   message: "failed",
-    //   data: "No data",
-    // });
+    // res.status(500).json({ error: error.message });
+    return res.status(500).json({
+      message: "failed",
+      data: "No data",
+    });
   }
 };
 
@@ -246,7 +246,12 @@ export const updateUser = async (req, res) => {
   try {
     const token = req.headers.authorization.split(" ")[1];
     const userId = tokenUtil.verifyAndExtract(token).userId;
-    if (req.body._id === userId) {
+    const IsSuperAdmin = await userAuthority.checkPermission(
+      userId,
+      "superAdmin"
+    );
+    if (req.body._id === userId || IsSuperAdmin == true) {
+      delete req.body._id;
       const user = await User.findByIdAndUpdate(userId, req.body, {
         new: true,
       });
@@ -270,7 +275,7 @@ export const updateUser = async (req, res) => {
       });
     }
   } catch (error) {
-    // res.status(500).json({ error: error.message });
+    res.status(500).json({ error: error.message });
     return res.status(500).json({
       message: "failed",
       data: "No data",
@@ -283,7 +288,11 @@ export const deleteUser = async (req, res) => {
   try {
     const token = req.headers.authorization.split(" ")[1];
     const userId = tokenUtil.verifyAndExtract(token).userId;
-    if (req.body._id === userId) {
+    const IsSuperAdmin = await userAuthority.checkPermission(
+      userId,
+      "superAdmin"
+    );
+    if (req.body._id === userId || IsSuperAdmin) {
       const user = await User.findByIdAndUpdate(
         userId,
         { UserStatus: false },

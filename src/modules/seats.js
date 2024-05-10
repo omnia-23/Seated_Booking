@@ -13,7 +13,6 @@ const seatsSchema = mongoose.Schema({
   },
   Seat_description: {
     type: String,
-    required: true,
   },
   Seat_Price: {
     type: Number,

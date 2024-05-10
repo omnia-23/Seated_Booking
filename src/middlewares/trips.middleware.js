@@ -1,3 +1,4 @@
+import { populate } from "dotenv";
 import { stationsModel } from "../modules/stations.js";
 import { tripsModel } from "../modules/trips.js";
 import { catchError } from "../utils/errorHandler.js";
@@ -32,11 +33,15 @@ export const searchTrips = catchError(async (req, res, next) => {
     });
   }
 
-  const trips = await tripsModel.find({
-    Boarding_Station: boarding._id,
-    Destination_Station: destination._id,
-    Trip_Start_Date: normalizedDate,
-  });
+  const trips = await tripsModel
+    .find({
+      Boarding_Station: boarding._id,
+      Destination_Station: destination._id,
+      Trip_Start_Date: normalizedDate,
+    })
+    .populate({ path: "Vehicle_ID", populate: { path: "Organization_ID" } })
+    .populate("Boarding_Station")
+    .populate("Destination_Station");
   if (trips)
     res.status(200).json({
       message: "Success",
@@ -50,7 +55,11 @@ export const searchTrips = catchError(async (req, res, next) => {
 });
 
 export const getTrips = catchError(async (req, res, next) => {
-  const trips = await tripsModel.find();
+  const trips = await tripsModel
+    .find()
+    .populate({ path: "Vehicle_ID", populate: { path: "Organization_ID" } })
+    .populate("Boarding_Station")
+    .populate("Destination_Station");
   if (trips)
     res.status(200).json({
       message: "Success",

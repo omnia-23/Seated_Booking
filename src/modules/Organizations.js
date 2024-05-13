@@ -48,7 +48,7 @@ const OrganizationsSchema = new mongoose.Schema({
     type: Array,
     required: false,
   },
-  OrgaizationImage: {
+  OrganizationImage: {
     type: String,
     required: false,
   },

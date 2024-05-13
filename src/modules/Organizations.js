@@ -44,7 +44,7 @@ const OrganizationsSchema = new mongoose.Schema({
     type: Number,
     required: false,
   },
-  OrganizationAttachements: {
+  OrganizationAttachments: {
     type: Array,
     required: false,
   },

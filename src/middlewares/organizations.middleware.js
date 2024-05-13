@@ -39,7 +39,7 @@ export const createOrganization = async (req, res) => {
       FinancialLimitFrom,
       FinancialLimitTo,
       BankAccount,
-      OrganizationAttachements: attachments,
+      OrganizationAttachments: attachments,
       OrganizationImage: profile, // Make sure to update this field as needed
     });
 
@@ -142,6 +142,7 @@ export const getOrganizationByName = async (req, res) => {
 // Update organization by ID
 export const updateOrganization = async (req, res) => {
   try {
+    // Extract user ID from token
     const token = req.headers.authorization.split(" ")[1];
     const userId = tokenUtil.verifyAndExtract(token).userId;
 
@@ -155,41 +156,59 @@ export const updateOrganization = async (req, res) => {
     const hasPermission = IsSuperAdmin || (IsOrgAdmin && HisOrg);
 
     if (!hasPermission) {
-      // if (IsOrgAdmin && !HisOrg) {
-      //   return res
-      //     .status(403)
-      //     .json({ error: "User isn't authorized in this organization" });
-
-      // }
-      // return res.status(403).json({ error: "User does not have permission" });
       return res.status(403).json({
         message: "failed",
-        data: "No data",
+        data: "User does not have permission",
       });
     }
 
+    // Access uploaded files from req.files
+    const images = req.files || [];
+    let profile, attachments;
+
+    // Process uploaded images if new images were uploaded
+    if (images.length > 0) {
+      // Process uploaded images by uploading to Cloudinary
+      const uploadedImages = await Promise.all(
+        images.map(uploadImg.uploadImageToCloudinary)
+      );
+      profile = uploadedImages[0];
+      attachments = uploadedImages.slice(1, 3);
+    } else {
+      // No new images uploaded, retain the existing ones
+      // Retrieve organization data from the database
+      const organization = await Organization.findById(req.params.id);
+      profile = organization.OrganizationImage;
+      attachments = organization.OrganizationAttachments;
+    }
+
+    // Update organization data in the database, including image URLs
     const organization = await Organization.findByIdAndUpdate(
       req.params.id,
-      req.body,
+      {
+        OrganizationAttachments: attachments,
+        OrganizationImage: profile,
+        ...req.body, // Update other organization data
+      },
       { new: true }
     );
+
     if (!organization) {
-      // return res.status(404).json({ error: "Organization not found" });
       return res.status(404).json({
         message: "failed",
-        data: "No data",
+        data: "Organization not found",
       });
     }
-    // res.status(200).json(organization);
+
     return res.status(200).json({
       message: "success",
       data: organization,
     });
   } catch (error) {
-    // res.status(500).json({ error: error.message });
+    console.error("Error updating organization:", error);
     return res.status(500).json({
       message: "failed",
-      data: "No data",
+      data: "An error occurred while updating organization",
     });
   }
 };

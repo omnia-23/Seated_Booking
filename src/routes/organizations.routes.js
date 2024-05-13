@@ -23,7 +23,7 @@ router.get("/:id", getOrganizationById);
 router.get("/name/:name", getOrganizationByName);
 
 // Update organization by ID
-router.put("/:id", updateOrganization);
+router.put("/:id", upload.array("files", 3), updateOrganization);
 
 // Delete organization by ID
 router.delete("/:id", deleteOrganization);

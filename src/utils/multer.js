@@ -1,36 +1,22 @@
 import multer from "multer";
 import path from "path";
+const storage = multer.diskStorage({});
 
 function fileFilter(req, file, cb) {
-  const allowedMimeTypes = ["text/csv", "application/vnd.ms-excel"];
-
+  //   if (!file.mimetype.startsWith("image"))
+  //     return cb(new AppError("Images only!", 400), false);
+  //   cb(null, true);
+  const allowedMimeTypes = ["image/jpeg", "image/png"];
   const isValidMimeType = allowedMimeTypes.includes(file.mimetype);
-  const isValidExtension =
-    path.extname(file.originalname).toLowerCase() === ".csv";
+  const isValidExtension = /\.(jpg|jpeg|png)$/.test(
+    path.extname(file.originalname).toLowerCase()
+  );
 
   if (isValidMimeType && isValidExtension) {
     cb(null, true);
   } else {
-    cb(null, false);
-    cb(new Error("Only CSV files are allowed!"));
+    cb(new Error("Only JPEG and PNG files are allowed!"), false);
   }
 }
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, path.join(__dirname, "uploads"));
-  },
-  filename: (req, file, cb) => {
-    const timestamp = Date.now();
-    const extension = path.extname(file.originalname).toLowerCase();
-    const basename = path.basename(file.originalname, extension);
-    cb(null, `${basename}-${timestamp}${extension}`);
-  },
-});
-
-const upload = multer({
-  storage,
-  fileFilter: fileFilter,
-});
-
-export default upload;
+export const upload = multer({ storage, fileFilter });

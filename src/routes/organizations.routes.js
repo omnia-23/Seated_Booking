@@ -9,9 +9,9 @@ import {
   updateOrganization,
   deleteOrganization,
 } from "../middlewares/organizations.middleware.js";
-
+import { upload } from "../utils/multer.js";
 // Create a new organization
-router.post("/", createOrganization);
+router.post("/", upload.array("files", 3), createOrganization);
 
 // Get all organizations
 router.get("/all", getAllOrganizations);

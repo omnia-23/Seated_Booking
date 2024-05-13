@@ -1,39 +1,59 @@
 import Organization from "../modules/Organizations.js";
 import userAuthority from "../utils/checkAuthority.js";
-import jwt from "jsonwebtoken";
 import tokenUtil from "../utils/tokenUtil.js";
+import uploadImg from "../utils/uploadImg.js"; // Adjust the import path as needed
+
 // Create a new organization
 
 export const createOrganization = async (req, res) => {
   try {
-    const token = req.headers.authorization.split(" ")[1];
-    const userId = tokenUtil.verifyAndExtract(token).userId;
-    // Check if the user has authority
-    const IsSuperAdmin = await userAuthority.checkPermission(
-      userId,
-      "superAdmin"
-    );
-    if (!IsSuperAdmin) {
-      // return res.status(403).json({ error: "User does not have permission" });
-      return res.status(403).json({
-        message: "failed",
-        data: "No data",
-      });
-    }
+    const {
+      LicenceID,
+      OrgStatus,
+      OrganizationType,
+      OrganizationName,
+      OrganizationFinancialID,
+      FinancialLimitFrom,
+      FinancialLimitTo,
+      BankAccount,
+    } = req.body;
 
-    const organization = new Organization(req.body);
+    // Access uploaded files from req.files
+    const images = req.files || [];
+
+    // Process uploaded images by uploading to Cloudinary
+    const uploadedImages = await Promise.all(
+      images.map(uploadImg.uploadImageToCloudinary)
+    );
+
+    console.log(uploadedImages);
+    let profile = uploadedImages[0];
+    let attachments = uploadedImages.slice(1, 3);
+
+    const organization = new Organization({
+      LicenceID,
+      OrgStatus,
+      OrganizationType,
+      OrganizationName,
+      OrganizationFinancialID,
+      FinancialLimitFrom,
+      FinancialLimitTo,
+      BankAccount,
+      OrganizationAttachements: attachments,
+      OrganizationImage: profile, // Make sure to update this field as needed
+    });
+
     await organization.save();
-    // res.status(201).json(organization);
+
     return res.status(201).json({
       message: "success",
       data: organization,
     });
   } catch (error) {
-    // res.status(400).json({ error: error.message });
-    return res.status(400).json({
-      message: "failed",
-      data: "No data",
-    });
+    console.error("Error creating organization:", error);
+    return res
+      .status(500)
+      .json({ message: "Failed to create organization", error: error.message });
   }
 };
 

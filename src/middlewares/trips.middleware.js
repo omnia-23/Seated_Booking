@@ -1,6 +1,7 @@
 import { stationsModel } from "../modules/stations.js";
 import { tripsModel } from "../modules/trips.js";
 import { catchError } from "../utils/errorHandler.js";
+import tokenUtil from "../utils/tokenUtil.js";
 
 export const searchTrips = catchError(async (req, res, next) => {
   let { from, to, date } = req.body;
@@ -82,6 +83,8 @@ export const getTrips = catchError(async (req, res, next) => {
 });
 
 export const addTrips = catchError(async (req, res, next) => {
+  const token = req.headers.authorization.split(" ")[1];
+  req.body.Organization_ID = tokenUtil.verifyAndExtract(token).orgId;
   const trips = await tripsModel.create(req.body);
   if (trips)
     res.status(200).json({

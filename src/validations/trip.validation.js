@@ -15,23 +15,17 @@ export const addTripSchema = Joi.object({
   Destination_Station: Joi.string()
     .custom(isObjectId, "ObjectId validation")
     .required(),
-  Organization_ID: Joi.string()
-    .custom(isObjectId, "ObjectId validation")
-    .required(),
   Trip_Start_Date: Joi.string().required(),
   Trip_End_Date: Joi.string().required(),
   Vehicle_ID: Joi.string().custom(isObjectId, "ObjectId validation").required(),
-  Seat_Price: Joi.number().required(),
   Trip_Notes: Joi.string().required(),
 });
 
 export const updateTripSchema = Joi.object({
   Boarding_Station: Joi.string().custom(isObjectId, "ObjectId validation"),
   Destination_Station: Joi.string().custom(isObjectId, "ObjectId validation"),
-  Organization_ID: Joi.string().custom(isObjectId, "ObjectId validation"),
   Trip_Start_Date: Joi.string(),
   Trip_End_Date: Joi.string(),
   Vehicle_ID: Joi.string().custom(isObjectId, "ObjectId validation"),
-  Seat_Price: Joi.number(),
   Trip_Notes: Joi.string(),
 });

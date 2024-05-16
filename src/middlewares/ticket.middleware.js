@@ -6,59 +6,109 @@ import { tripsModel } from "../modules/trips.js";
 
 export const getHistory = catchError(async (req, res, next) => {
   const token = req.headers.authorization.split(" ")[1];
+
   let User_ID = tokenUtil.verifyAndExtract(token).userId;
+  let role = tokenUtil.verifyAndExtract(token).userRole;
+  if (role === "consumer") {
+    const tickets = await ticketModel
+      .find({ User_ID })
+      .populate({
+        path: "Trip_ID",
+        populate: [
+          { path: "Boarding_Station" },
+          { path: "Destination_Station" },
+          { path: "Organization_ID" },
+        ],
+      })
+      .populate("Seat_Number");
+    if (tickets) {
+      let updatedTickets = [];
+      let processedTripIDs = new Set();
 
-  const tickets = await ticketModel
-    .find({ User_ID })
-    .populate({
-      path: "Trip_ID",
-      populate: [
-        { path: "Boarding_Station" },
-        { path: "Destination_Station" },
-        { path: "Organization_ID" },
-      ],
-    })
-    .populate("Seat_Number");
-  if (tickets) {
-    let updatedTickets = [];
-    let processedTripIDs = new Set();
+      tickets.forEach((el) => {
+        if (!processedTripIDs.has(el.Trip_ID._id)) {
+          let count = 0;
+          let totalPrice = tickets.reduce((acc, ticket) => {
+            if (ticket.Trip_ID._id === el.Trip_ID._id) {
+              acc += ticket.Seat_Number.Seat_Price;
+              count += 1;
+            }
+            return acc;
+          }, 0);
 
-    tickets.forEach((el) => {
-      if (!processedTripIDs.has(el.Trip_ID._id)) {
-        let count = 0;
-        let totalPrice = tickets.reduce((acc, ticket) => {
-          if (ticket.Trip_ID._id === el.Trip_ID._id) {
-            acc += ticket.Seat_Number.Seat_Price;
-            count += 1;
-          }
-          return acc;
-        }, 0);
+          processedTripIDs.add(el.Trip_ID._id);
+          updatedTickets.push({
+            ticket_id: el._id,
+            trip_id: el.Trip_ID._id,
+            boarding_station: el.Trip_ID.Boarding_Station.Station_Name,
+            destination_station: el.Trip_ID.Destination_Station.Station_Name,
+            trip_start_date: el.Trip_ID.Trip_Start_Date,
+            trip_end_date: el.Trip_ID.Trip_End_Date,
+            tickets_count: count,
+            total_price: totalPrice,
+          });
+        }
+      });
 
-        // Add the current trip ID to the set of processed IDs
-        processedTripIDs.add(el.Trip_ID._id);
-
-        updatedTickets.push({
-          ticket_id: el._id,
-          trip_id: el.Trip_ID._id,
-          boarding_station: el.Trip_ID.Boarding_Station.Station_Name,
-          destination_station: el.Trip_ID.Destination_Station.Station_Name,
-          trip_start_date: el.Trip_ID.Trip_Start_Date,
-          trip_end_date: el.Trip_ID.Trip_End_Date,
-          tickets_count: count,
-          total_price: totalPrice,
-        });
-      }
+      res.status(200).json({
+        message: "Success",
+        data: updatedTickets,
+      });
+    } else
+      res.status(204).json({
+        message: "Success",
+        data: "No data Found",
+      });
+    return;
+  } else if (role === "superAdmin") {
+    const tickets = await ticketModel
+      .find()
+      .populate({
+        path: "Trip_ID",
+        populate: [
+          { path: "Boarding_Station" },
+          { path: "Destination_Station" },
+          { path: "Organization_ID" },
+        ],
+      })
+      .populate("Seat_Number");
+    if (tickets) {
+      res.status(200).json({
+        message: "Success",
+        data: tickets,
+      });
+    } else
+      res.status(204).json({
+        message: "Success",
+        data: "No data Found",
+      });
+  } else if (role === "orgAdmin") {
+    const tickets = await ticketModel
+      .find({ Organization_ID: tokenUtil.verifyAndExtract(token).orgId })
+      .populate({
+        path: "Trip_ID",
+        populate: [
+          { path: "Boarding_Station" },
+          { path: "Destination_Station" },
+          { path: "Organization_ID" },
+        ],
+      })
+      .populate("Seat_Number");
+    if (tickets) {
+      res.status(200).json({
+        message: "Success",
+        data: tickets,
+      });
+    } else
+      res.status(204).json({
+        message: "Success",
+        data: "No data Found",
+      });
+  } else {
+    res.status(403).json({
+      message: "Unauthorized",
     });
-
-    res.status(200).json({
-      message: "Success",
-      data: updatedTickets,
-    });
-  } else
-    res.status(204).json({
-      message: "Success",
-      data: "No data Found",
-    });
+  }
 });
 
 export const getTickets = catchError(async (req, res, next) => {
@@ -128,7 +178,7 @@ export const addTicket = catchError(async (req, res, next) => {
       Status_Booked: false,
     })
     .limit(Seats_Count);
-    
+
   if (seats.length < Seats_Count) {
     res.status(200).json({
       message: "there isn't enough available seats",

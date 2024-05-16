@@ -44,6 +44,25 @@ export const searchTrips = catchError(async (req, res, next) => {
     });
 });
 
+export const getTrip = catchError(async (req, res, next) => {
+  const { id } = req.params;
+  const trips = await tripsModel
+    .findById(id)
+    .populate({ path: "Vehicle_ID", populate: { path: "Organization_ID" } })
+    .populate("Boarding_Station")
+    .populate("Destination_Station");
+  if (trips)
+    res.status(200).json({
+      message: "Success",
+      data: trips,
+    });
+  else
+    res.status(204).json({
+      message: "Success",
+      data: "No data Found",
+    });
+});
+
 export const getTrips = catchError(async (req, res, next) => {
   const trips = await tripsModel
     .find()

@@ -82,6 +82,7 @@ export const getTrips = catchError(async (req, res, next) => {
 });
 
 export const addTrips = catchError(async (req, res, next) => {
+  req.body.Organization_ID = tokenUtil.verifyAndExtract(token).orgId;
   const trips = await tripsModel.create(req.body);
   if (trips)
     res.status(200).json({

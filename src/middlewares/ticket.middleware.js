@@ -9,6 +9,7 @@ export const getHistory = catchError(async (req, res, next) => {
 
   let User_ID = tokenUtil.verifyAndExtract(token).userId;
   let role = tokenUtil.verifyAndExtract(token).userRole;
+
   if (role === "consumer") {
     const tickets = await ticketModel
       .find({ User_ID })
@@ -21,10 +22,10 @@ export const getHistory = catchError(async (req, res, next) => {
         ],
       })
       .populate("Seat_Number");
+      
     if (tickets) {
       let updatedTickets = [];
       let processedTripIDs = new Set();
-
       tickets.forEach((el) => {
         if (!processedTripIDs.has(el.Trip_ID._id)) {
           let count = 0;

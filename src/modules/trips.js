@@ -35,10 +35,6 @@ const tripSchema = mongoose.Schema({
     ref: "Vehicles",
     required: true,
   },
-  Seat_Price: {
-    type: Number,
-    required: true,
-  },
   Trip_Notes: {
     type: String,
     required: true,

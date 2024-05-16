@@ -1,6 +1,7 @@
 import { stationsModel } from "../modules/stations.js";
 import { tripsModel } from "../modules/trips.js";
 import { catchError } from "../utils/errorHandler.js";
+import tokenUtil from "../utils/tokenUtil.js";
 
 export const searchTrips = catchError(async (req, res, next) => {
   let { from, to, date } = req.body;

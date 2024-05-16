@@ -2,6 +2,21 @@ import { vehiclesModel } from "../modules/vehicles.js";
 import { AppError, catchError } from "../utils/errorHandler.js";
 import tokenUtil from "../utils/tokenUtil.js";
 
+export const getVehicle = catchError(async (req, res, next) => {
+  const { id } = req.params;
+  const vehicles = await vehiclesModel.findById(id).populate("Organization_ID");
+  if (vehicles)
+    res.status(200).json({
+      message: "Success",
+      data: vehicles,
+    });
+  else
+    res.status(204).json({
+      message: "Success",
+      data: "No data Found",
+    });
+});
+
 export const getVehicles = catchError(async (req, res, next) => {
   const vehicles = await vehiclesModel.find().populate("Organization_ID");
   if (vehicles)

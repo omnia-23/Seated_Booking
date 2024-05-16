@@ -184,7 +184,7 @@ export const signin = async (req, res) => {
     const user = await User.findOne({ UserEmail });
     console.log(user);
     if (!user) {
-      // res.status(400).json({ error: "User not found" });
+      return res.status(400).json({ error: "User not found" });
     }
     // Compare passwords
     const isPasswordValid = await bcrypt.compare(
@@ -192,7 +192,7 @@ export const signin = async (req, res) => {
       user.UserPassword
     );
     if (!isPasswordValid) {
-      // res.status(401).json({ error: "password not valid" });
+      return res.status(401).json({ error: "password not valid" });
     }
     const role = await userRole.getRole(user._id);
     const userObj = user.toObject();

@@ -2,6 +2,7 @@ import { Router } from "express";
 import {
   addTrips,
   deleteTrips,
+  getTrip,
   getTrips,
   searchTrips,
   updateTrips,
@@ -16,6 +17,7 @@ const tripsRouter = Router();
 
 tripsRouter
   .get("/", getTrips)
+  .get("/:id", getTrip)
   .post("/search", searchTrips)
   .post("/", Validation(addTripSchema), addTrips)
   .put("/:id", Validation(updateTripSchema), updateTrips)

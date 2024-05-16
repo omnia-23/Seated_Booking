@@ -85,11 +85,11 @@ export const signup = async (req, res) => {
     // Check if username already exists
     const existingUser = await User.findOne({ UserEmail });
     if (existingUser) {
-      // return res.status(400).json({ error: "Email already exists" });
-      return res.status(400).json({
-        message: "failed",
-        data: "No data",
-      });
+      return res.status(400).json({ error: "Email already exists" });
+      // return res.status(400).json({
+      //   message: "failed",
+      //   data: "No data",
+      // });
     }
     // Hash the password
     const hashedPassword = await bcrypt.hash(UserPassword, 10);
@@ -124,11 +124,11 @@ export const signup = async (req, res) => {
       data: newUser,
     });
   } catch (error) {
-    // res.status(400).json({ error: error.message });
-    return res.status(400).json({
-      message: "failed",
-      data: "No data",
-    });
+    res.status(400).json({ error: error.message });
+    // return res.status(400).json({
+    //   message: "failed",
+    //   data: "No data",
+    // });
   }
 };
 

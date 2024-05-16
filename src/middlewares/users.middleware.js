@@ -184,7 +184,7 @@ export const signin = async (req, res) => {
     const user = await User.findOne({ UserEmail });
     console.log(user);
     if (!user) {
-      // res.status(400).json({ error: "User not found" });
+      return res.status(400).json({ error: "User not found" });
     }
     // Compare passwords
     const isPasswordValid = await bcrypt.compare(
@@ -192,7 +192,7 @@ export const signin = async (req, res) => {
       user.UserPassword
     );
     if (!isPasswordValid) {
-      // res.status(401).json({ error: "password not valid" });
+      return res.status(401).json({ error: "password not valid" });
     }
     const role = await userRole.getRole(user._id);
     const userObj = user.toObject();
@@ -279,8 +279,9 @@ export const updateUser = async (req, res) => {
       "superAdmin"
     );
     if (req.body._id === userId || IsSuperAdmin == true) {
+      const updatedId = req.body._id;
       delete req.body._id;
-      const user = await User.findByIdAndUpdate(userId, req.body, {
+      const user = await User.findByIdAndUpdate(updatedId, req.body, {
         new: true,
       });
       if (!user) {
@@ -297,13 +298,13 @@ export const updateUser = async (req, res) => {
       });
     } else {
       // return res.status(403).json("You can update only your account!");
-      return res.status(403).json({
-        message: "failed",
-        data: "No data",
-      });
+      // return res.status(403).json({
+      //   message: "failed",
+      //   data: "No data",
+      // });
     }
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    // res.status(500).json({ error: error.message });
     return res.status(500).json({
       message: "failed",
       data: "No data",
@@ -322,7 +323,7 @@ export const deleteUser = async (req, res) => {
     );
     if (req.body._id === userId || IsSuperAdmin) {
       const user = await User.findByIdAndUpdate(
-        userId,
+        req.body._id,
         { UserStatus: false },
         { new: true }
       );

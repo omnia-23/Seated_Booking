@@ -20,9 +20,39 @@ export const getHistory = catchError(async (req, res, next) => {
     })
     .populate("Seat_Number");
   if (tickets) {
+    let updatedTickets = [];
+    let processedTripIDs = new Set();
+
+    tickets.forEach((el) => {
+      if (!processedTripIDs.has(el.Trip_ID._id)) {
+        let count = 0;
+        let totalPrice = tickets.reduce((acc, ticket) => {
+          if (ticket.Trip_ID._id === el.Trip_ID._id) {
+            acc += ticket.Seat_Number.Seat_Price;
+            count += 1;
+          }
+          return acc;
+        }, 0);
+
+        // Add the current trip ID to the set of processed IDs
+        processedTripIDs.add(el.Trip_ID._id);
+
+        updatedTickets.push({
+          ticket_id: el._id,
+          trip_id: el.Trip_ID._id,
+          boarding_station: el.Trip_ID.Boarding_Station.Station_Name,
+          destination_station: el.Trip_ID.Destination_Station.Station_Name,
+          trip_start_date: el.Trip_ID.Trip_Start_Date,
+          trip_end_date: el.Trip_ID.Trip_End_Date,
+          tickets_count: count,
+          total_price: totalPrice,
+        });
+      }
+    });
+
     res.status(200).json({
       message: "Success",
-      data: tickets,
+      data: updatedTickets,
     });
   } else
     res.status(204).json({
@@ -84,10 +114,21 @@ export const addTicket = catchError(async (req, res, next) => {
   const token = req.headers.authorization.split(" ")[1];
 
   const { Trip_ID, Seats_Count } = req.body;
-  let { Vehicle_ID } = await tripsModel.findById(Trip_ID);
+  let vehicle = await tripsModel.findById(Trip_ID);
+  if (!vehicle) {
+    res.status(404).json({
+      message: "vehicle not found",
+    });
+    return;
+  }
   let seats = await seatsModel
-    .find({ Vehicle_ID, Active_Seat: true, Status_Booked: false })
+    .find({
+      Vehicle_ID: vehicle.Vehicle_ID,
+      Active_Seat: true,
+      Status_Booked: false,
+    })
     .limit(Seats_Count);
+    
   if (seats.length < Seats_Count) {
     res.status(200).json({
       message: "there isn't enough available seats",

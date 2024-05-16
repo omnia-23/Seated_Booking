@@ -27,7 +27,7 @@ class checkRole {
         role = "orgAdmin";
       }
 
-      console.log(role);
+      
       return role;
     } catch (error) {
       console.error("Error checking user permission:", error);

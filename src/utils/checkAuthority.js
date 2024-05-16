@@ -45,7 +45,6 @@ class checkAuthority {
       }
       // Get the user's organization ID from the user document
       const userOrgId = user.OrganizationID;
-      console.log(user);
       if (userOrgId == orgId) return true;
       return false;
     } catch (error) {

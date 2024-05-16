@@ -1,35 +1,25 @@
-import { populate } from "dotenv";
 import { stationsModel } from "../modules/stations.js";
 import { tripsModel } from "../modules/trips.js";
 import { catchError } from "../utils/errorHandler.js";
 
-//TODO : handle the get trip response
 export const searchTrips = catchError(async (req, res, next) => {
   let { from, to, date } = req.body;
-  let Boarding = from.split("-");
-  let Destination = to.split("-");
 
   const [year, month, day] = date.split("-").map(Number);
   const normalizedDate = `${year}-${month}-${day}`;
 
-  const boarding = await stationsModel.findOne({
-    Governorate_Name: Boarding[0],
-    Station_Name: Boarding[1],
-  });
+  const boarding = await stationsModel.findById(from);
 
   if (!boarding) {
     return res.status(404).json({
-      message: `Boarding station '${Boarding[1]}' not found in governorate '${Boarding[0]}'`,
+      message: `Boarding station not found`,
     });
   }
-  const destination = await stationsModel.findOne({
-    Governorate_Name: Destination[0],
-    Station_Name: Destination[1],
-  });
+  const destination = await stationsModel.findById(to);
 
   if (!destination) {
     return res.status(404).json({
-      message: `Destination station '${Destination[1]}' not found in governorate '${Boarding[0]}'`,
+      message: `Destination station not found `,
     });
   }
 

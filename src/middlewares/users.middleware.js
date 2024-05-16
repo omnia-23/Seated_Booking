@@ -1,6 +1,7 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import User from "../modules/Users.js";
+import Organizations from "../modules/Organizations.js";
 import Permission from "../modules/Permissions.js";
 import userAuthority from "../utils/checkAuthority.js";
 import userRole from "../utils/checkRole.js";
@@ -17,29 +18,32 @@ export const createOrgAdmin = async (req, res) => {
       "superAdmin"
     );
     if (!IsSuperAdmin) {
-      // return res.status(403).json({ error: "User does not have permission" });
-      return res.status(403).json({
-        message: "failed",
-        data: "No data",
-      });
+      return res.status(403).json({ error: "User does not have permission" });
+      // return res.status(403).json({
+      //   message: "failed",
+      //   data: "No data",
+      // });
     }
     const { UserEmail, UserPassword } = req.body;
     const existingUser = await User.findOne({ UserEmail });
     if (existingUser) {
-      // return res.status(400).json({ error: "email already exists" });
-      return res.status(400).json({
-        message: "failed",
-        data: "No data",
-      });
+      return res.status(400).json({ error: "email already exists" });
+      // return res.status(400).json({
+      //   message: "failed",
+      //   data: "No data",
+      // });
     }
     // Hash the password
     const hashedPassword = await bcrypt.hash(UserPassword, 10);
 
+    let organization = await Organizations.findOne({
+      OrganizationName: req.body.OrganizationName,
+    });
     // Create org admin permission
     let orgAdmin_permission = {
-      OrganizationID: req.body.OrganizationID,
+      OrganizationID: organization._id,
       UserMobileNumber: req.body.UserMobileNumber,
-      OrgAdminID: req.body.OrgAdminID,
+      OrgAdminID: userId,
       // UserStatus: true,
       SuperAdmin: false,
       OrganizationAdmin: true,
@@ -53,12 +57,22 @@ export const createOrgAdmin = async (req, res) => {
     await permission.save();
 
     const newAdmin = new User({
-      ...req.body,
       UserPassword: hashedPassword,
       PermissionID: permission._id,
+      OrganizationID: organization._id,
+      OrgAdminID: userId,
+      UserStatus: req.body.UserStatus,
+      Username: req.body.Username,
+      UserMobileNumber: req.body.UserMobileNumber,
+      UserEmail: req.body.UserEmail,
+      BusinessUserID: req.body.BusinessUserID,
+      UserNationalID: req.body.UserNationalID,
     });
     await newAdmin.save();
-    res.status(201).json(newAdmin);
+    return res.status(201).json({
+      message: "success",
+      data: newAdmin,
+    });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
@@ -184,12 +198,7 @@ export const signin = async (req, res) => {
     const userObj = user.toObject();
     userObj.role = role;
     const token = jwt.sign(
-      {
-        userId: user._id,
-        orgId: user.OrganizationID,
-        userRole: role,
-        permissionId: user.PermissionID,
-      },
+      { userId: user._id, orgId: user.OrganizationID, userRole: role },
       process.env.JWT_SECRET
     );
     return res.status(200).json({

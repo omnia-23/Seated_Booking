@@ -7,6 +7,7 @@ import {
   signin,
   getAllUsers,
   getUserById,
+  getAdminByOrgID,
   updateUser,
   deleteUser,
 } from "../middlewares/users.middleware.js";
@@ -25,6 +26,9 @@ router.get("/all", getAllUsers);
 
 // Get user by ID
 router.get("/:id", getUserById);
+
+// Get admin by org ID
+router.get("/orgAdmin/:id", getAdminByOrgID);
 
 // Update user by ID
 router.put("/", updateUser);

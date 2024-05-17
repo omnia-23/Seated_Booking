@@ -6,6 +6,7 @@ import Permission from "../modules/Permissions.js";
 import userAuthority from "../utils/checkAuthority.js";
 import userRole from "../utils/checkRole.js";
 import tokenUtil from "../utils/tokenUtil.js";
+import checkRole from "../utils/checkRole.js";
 
 //create org admin user
 export const createOrgAdmin = async (req, res) => {
@@ -18,20 +19,20 @@ export const createOrgAdmin = async (req, res) => {
       "superAdmin"
     );
     if (!IsSuperAdmin) {
-      return res.status(403).json({ error: "User does not have permission" });
-      // return res.status(403).json({
-      //   message: "failed",
-      //   data: "No data",
-      // });
+      // return res.status(403).json({ error: "User does not have permission" });
+      return res.status(403).json({
+        message: "failed",
+        data: "No data",
+      });
     }
     const { UserEmail, UserPassword } = req.body;
     const existingUser = await User.findOne({ UserEmail });
     if (existingUser) {
-      return res.status(400).json({ error: "email already exists" });
-      // return res.status(400).json({
-      //   message: "failed",
-      //   data: "No data",
-      // });
+      // return res.status(400).json({ error: "email already exists" });
+      return res.status(400).json({
+        message: "failed",
+        data: "No data",
+      });
     }
     // Hash the password
     const hashedPassword = await bcrypt.hash(UserPassword, 10);
@@ -85,11 +86,11 @@ export const signup = async (req, res) => {
     // Check if username already exists
     const existingUser = await User.findOne({ UserEmail });
     if (existingUser) {
-      return res.status(400).json({ error: "Email already exists" });
-      // return res.status(400).json({
-      //   message: "failed",
-      //   data: "No data",
-      // });
+      // return res.status(400).json({ error: "Email already exists" });
+      return res.status(400).json({
+        message: "failed",
+        data: "No data",
+      });
     }
     // Hash the password
     const hashedPassword = await bcrypt.hash(UserPassword, 10);
@@ -124,11 +125,11 @@ export const signup = async (req, res) => {
       data: newUser,
     });
   } catch (error) {
-    res.status(400).json({ error: error.message });
-    // return res.status(400).json({
-    //   message: "failed",
-    //   data: "No data",
-    // });
+    // res.status(400).json({ error: error.message });
+    return res.status(400).json({
+      message: "failed",
+      data: "No data",
+    });
   }
 };
 
@@ -184,7 +185,7 @@ export const signin = async (req, res) => {
     const user = await User.findOne({ UserEmail });
     console.log(user);
     if (!user) {
-      return res.status(400).json({ error: "User not found" });
+      // res.status(400).json({ error: "User not found" });
     }
     // Compare passwords
     const isPasswordValid = await bcrypt.compare(
@@ -192,7 +193,7 @@ export const signin = async (req, res) => {
       user.UserPassword
     );
     if (!isPasswordValid) {
-      return res.status(401).json({ error: "password not valid" });
+      // res.status(401).json({ error: "password not valid" });
     }
     const role = await userRole.getRole(user._id);
     const userObj = user.toObject();
@@ -269,6 +270,55 @@ export const getUserById = async (req, res) => {
   }
 };
 
+// Get user by ID
+export const getAdminByOrgID = async (req, res) => {
+  try {
+    // Extract user ID from token
+    const token = req.headers.authorization.split(" ")[1];
+    const userId = tokenUtil.verifyAndExtract(token).userId;
+    const orgId = tokenUtil.verifyAndExtract(token).orgId;
+
+    // Check if the user has authority
+    const IsSuperAdmin = await userAuthority.checkPermission(
+      userId,
+      "superAdmin"
+    );
+    const IsOrgAdmin = await userAuthority.checkPermission(userId, "orgAdmin");
+    const HisOrg = await userAuthority.checkOrg(userId, req.params.id);
+    const hasPermission = IsSuperAdmin || (IsOrgAdmin && HisOrg);
+
+    if (!hasPermission) {
+      return res.status(403).json({
+        message: "failed",
+        data: "User does not have permission",
+      });
+    }
+    const admin = await User.findOne({
+      OrganizationID: req.params.id,
+    });
+    const isConsumer = checkRole.getRole(admin._id) == "consumer";
+
+    if (!admin || isConsumer) {
+      // return res.status(404).json({ error: "User not found" });
+      return res.status(404).json({
+        message: "failed",
+        data: "No admin found",
+      });
+    }
+    // res.status(200).json(user);
+    return res.status(200).json({
+      message: "success",
+      data: admin,
+    });
+  } catch (error) {
+    // res.status(500).json({ error: error.message });
+    return res.status(500).json({
+      message: "failed",
+      error: error.message,
+    });
+  }
+};
+
 // Update user by ID
 export const updateUser = async (req, res) => {
   try {
@@ -279,9 +329,8 @@ export const updateUser = async (req, res) => {
       "superAdmin"
     );
     if (req.body._id === userId || IsSuperAdmin == true) {
-      const updatedId = req.body._id;
       delete req.body._id;
-      const user = await User.findByIdAndUpdate(updatedId, req.body, {
+      const user = await User.findByIdAndUpdate(userId, req.body, {
         new: true,
       });
       if (!user) {
@@ -298,13 +347,13 @@ export const updateUser = async (req, res) => {
       });
     } else {
       // return res.status(403).json("You can update only your account!");
-      // return res.status(403).json({
-      //   message: "failed",
-      //   data: "No data",
-      // });
+      return res.status(403).json({
+        message: "failed",
+        data: "No data",
+      });
     }
   } catch (error) {
-    // res.status(500).json({ error: error.message });
+    res.status(500).json({ error: error.message });
     return res.status(500).json({
       message: "failed",
       data: "No data",
@@ -323,7 +372,7 @@ export const deleteUser = async (req, res) => {
     );
     if (req.body._id === userId || IsSuperAdmin) {
       const user = await User.findByIdAndUpdate(
-        req.body._id,
+        userId,
         { UserStatus: false },
         { new: true }
       );

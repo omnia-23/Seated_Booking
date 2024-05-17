@@ -70,61 +70,6 @@ export const getHistory = catchError(async (req, res, next) => {
       });
     }
     return;
-
-    // const tickets = await ticketModel
-    //   .find({ User_ID })
-    //   .populate({
-    //     path: "Trip_ID",
-    //     populate: [
-    //       { path: "Boarding_Station" },
-    //       { path: "Destination_Station" },
-    //       { path: "Organization_ID" },
-    //     ],
-    //   })
-    //   .populate("Seat_Number");
-
-    // if (tickets && tickets.length > 0) {
-    //   let updatedTickets = [];
-    //   let processedTripIDs = new Set();
-    //   let ticketIDs = [];
-
-    //   tickets.forEach((el) => {
-    //     ticketIDs.push(el._id);
-    //     if (!processedTripIDs.has(el.Trip_ID._id)) {
-    //       let count = 0;
-    //       let totalPrice = tickets.reduce((acc, ticket) => {
-    //         if (ticket.Trip_ID._id.equals(el.Trip_ID._id)) {
-    //           acc += ticket.Seat_Number.Seat_Price;
-    //           count += 1;
-    //         }
-    //         return acc;
-    //       }, 0);
-
-    //       processedTripIDs.add(el.Trip_ID._id);
-    //       updatedTickets.push({
-    //         trip_id: el.Trip_ID._id,
-    //         boarding_station: el.Trip_ID.Boarding_Station.Station_Name,
-    //         destination_station: el.Trip_ID.Destination_Station.Station_Name,
-    //         trip_start_date: el.Trip_ID.Trip_Start_Date,
-    //         trip_end_date: el.Trip_ID.Trip_End_Date,
-    //         tickets_count: count,
-    //         ticket_ids: ticketIDs,
-    //         total_price: totalPrice,
-    //       });
-    //     }
-    //   });
-
-    //   res.status(200).json({
-    //     message: "Success",
-    //     data: { ...updatedTicket },
-    //   });
-    // } else {
-    //   res.status(204).json({
-    //     message: "Success",
-    //     data: "No data Found",
-    //   });
-    // }
-    // return;
   } else if (role === "superAdmin") {
     const tickets = await ticketModel
       .find()
@@ -268,12 +213,32 @@ export const addTicket = catchError(async (req, res, next) => {
   }));
 
   const createdTickets = await ticketModel.insertMany(ticketsToCreate);
-  if (createdTickets)
+  if (createdTickets) {
+    const populatedTickets = await ticketModel
+      .find({ _id: { $in: createdTickets.map((ticket) => ticket._id) } })
+      .populate({ path: "Seat_Number", select: " Seat_Number Seat_Price" })
+      .populate({
+        path: "Organization_ID",
+        select: "OrganizationName OrganizationImage",
+      })
+      .populate({
+        path: "Trip_ID",
+        populate: [
+          { path: "Boarding_Station", select: "Governorate_Name Station_Name" },
+          {
+            path: "Destination_Station",
+            select: "Governorate_Name Station_Name",
+          },
+        ],
+      });
+
     res.status(200).json({
       message: "Success",
-      data: createdTickets,
+      data: populatedTickets,
     });
-  else next(new AppError("Something went Wrong ", 404));
+  } else {
+    next(new AppError("Something went wrong", 404));
+  }
 });
 
 // export const updateTicket = catchError(async (req, res, next) => {

@@ -49,7 +49,7 @@ const UsersSchema = new mongoose.Schema({
     validate: {
       validator: function (v) {
         // Check if UserNationalID is exactly 12 digits
-        return /^\d{12}$/.test(v);
+        return /^\d{14}$/.test(v);
       },
       message: (props) =>
         `${props.value} is not a valid 12-digit UserNationalID!`,

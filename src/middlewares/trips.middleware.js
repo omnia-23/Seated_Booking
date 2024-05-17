@@ -82,7 +82,7 @@ export const getTrip = catchError(async (req, res, next) => {
 
 export const getTrips = catchError(async (req, res, next) => {
   const trips = await tripsModel
-    .find({ Organization_ID })
+    .find()
     .populate({
       path: "Vehicle_ID",
       populate: { path: "Organization_ID" },

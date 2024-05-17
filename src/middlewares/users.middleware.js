@@ -185,7 +185,7 @@ export const signin = async (req, res) => {
     const user = await User.findOne({ UserEmail });
     console.log(user);
     if (!user) {
-      // res.status(400).json({ error: "User not found" });
+      return res.status(400).json({ error: "User not found" });
     }
     // Compare passwords
     const isPasswordValid = await bcrypt.compare(
@@ -193,7 +193,7 @@ export const signin = async (req, res) => {
       user.UserPassword
     );
     if (!isPasswordValid) {
-      // res.status(401).json({ error: "password not valid" });
+      return res.status(401).json({ error: "password not valid" });
     }
     const role = await userRole.getRole(user._id);
     const userObj = user.toObject();
@@ -276,8 +276,6 @@ export const getAdminByOrgID = async (req, res) => {
     // Extract user ID from token
     const token = req.headers.authorization.split(" ")[1];
     const userId = tokenUtil.verifyAndExtract(token).userId;
-    const orgId = tokenUtil.verifyAndExtract(token).orgId;
-
     // Check if the user has authority
     const IsSuperAdmin = await userAuthority.checkPermission(
       userId,
@@ -293,23 +291,40 @@ export const getAdminByOrgID = async (req, res) => {
         data: "User does not have permission",
       });
     }
-    const admin = await User.findOne({
-      OrganizationID: req.params.id,
-    });
-    const isConsumer = checkRole.getRole(admin._id) == "consumer";
-
-    if (!admin || isConsumer) {
-      // return res.status(404).json({ error: "User not found" });
-      return res.status(404).json({
-        message: "failed",
-        data: "No admin found",
+    if (IsSuperAdmin) {
+      console.log("super admin condition");
+      const superadmin = await User.findById(userId);
+      console.log(superadmin);
+      if (!superadmin) {
+        // return res.status(404).json({ error: "User not found" });
+        return res.status(404).json({
+          message: "failed",
+          data: "No admin found",
+        });
+      }
+      // res.status(200).json(user);
+      return res.status(200).json({
+        message: "success",
+        data: superadmin,
+      });
+    } else {
+      constadmin = await User.findOne({
+        OrganizationID: req.params.id,
+      });
+      // console.log(admin);
+      if (!admin) {
+        // return res.status(404).json({ error: "User not found" });
+        return res.status(404).json({
+          message: "failed",
+          data: "No admin found",
+        });
+      }
+      // res.status(200).json(user);
+      return res.status(200).json({
+        message: "success",
+        data: admin,
       });
     }
-    // res.status(200).json(user);
-    return res.status(200).json({
-      message: "success",
-      data: admin,
-    });
   } catch (error) {
     // res.status(500).json({ error: error.message });
     return res.status(500).json({
@@ -329,8 +344,9 @@ export const updateUser = async (req, res) => {
       "superAdmin"
     );
     if (req.body._id === userId || IsSuperAdmin == true) {
+      const updatedId = req.body._id;
       delete req.body._id;
-      const user = await User.findByIdAndUpdate(userId, req.body, {
+      const user = await User.findByIdAndUpdate(updatedId, req.body, {
         new: true,
       });
       if (!user) {
@@ -372,7 +388,7 @@ export const deleteUser = async (req, res) => {
     );
     if (req.body._id === userId || IsSuperAdmin) {
       const user = await User.findByIdAndUpdate(
-        userId,
+        req.body._id,
         { UserStatus: false },
         { new: true }
       );

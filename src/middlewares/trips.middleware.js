@@ -34,12 +34,27 @@ export const searchTrips = catchError(async (req, res, next) => {
     .populate({ path: "Vehicle_ID", populate: { path: "Organization_ID" } })
     .populate("Boarding_Station")
     .populate("Destination_Station");
-  if (trips)
+  if (trips) {
+    const tripsWithSeats = await Promise.all(
+      trips.map(async (trip) => {
+        const seats = await seatsModel.find({
+          Vehicle_ID: trip.Vehicle_ID._id,
+        });
+        return {
+          ...trip.toObject(),
+          Vehicle_ID: {
+            ...trip.Vehicle_ID.toObject(),
+            Seats: seats,
+          },
+        };
+      })
+    );
+
     res.status(200).json({
       message: "Success",
-      data: trips,
+      data: tripsWithSeats,
     });
-  else
+  } else
     res.status(204).json({
       message: "Success",
       data: "No data Found",
@@ -81,7 +96,6 @@ export const getTrips = catchError(async (req, res, next) => {
       data: "No data Found",
     });
   }
-
 
   const tripsWithSeats = await Promise.all(
     trips.map(async (trip) => {

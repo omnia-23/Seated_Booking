@@ -6,7 +6,7 @@ import { tripsModel } from "../modules/trips.js";
 
 export const getHistory = catchError(async (req, res, next) => {
   const token = req.headers.authorization.split(" ")[1];
-
+  console.log(tokenUtil.verifyAndExtract(token));
   let User_ID = tokenUtil.verifyAndExtract(token).userId;
   let role = tokenUtil.verifyAndExtract(token).userRole;
 
@@ -22,7 +22,7 @@ export const getHistory = catchError(async (req, res, next) => {
         ],
       })
       .populate("Seat_Number");
-      
+
     if (tickets) {
       let updatedTickets = [];
       let processedTripIDs = new Set();

@@ -291,7 +291,7 @@ export const getAdminByOrgID = async (req, res) => {
         data: "User does not have permission",
       });
     }
-    if (IsSuperAdmin) {
+    if (IsSuperAdmin && HisOrg) {
       console.log("super admin condition");
       const superadmin = await User.findById(userId);
       console.log(superadmin);

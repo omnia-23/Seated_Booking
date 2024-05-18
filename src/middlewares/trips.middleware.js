@@ -81,84 +81,42 @@ export const getTrip = catchError(async (req, res, next) => {
 });
 
 export const getTrips = catchError(async (req, res, next) => {
-  const token = req.headers.authorization.split(" ")[1];
-  let Organization_ID = tokenUtil.verifyAndExtract(token).orgId;
-  let role = tokenUtil.verifyAndExtract(token).userRole;
-  if (role === "orgAdmin") {
-    const trips = await tripsModel
-      .find({ Organization_ID })
-      .populate({
-        path: "Vehicle_ID",
-        populate: { path: "Organization_ID" },
-      })
-      .populate("Boarding_Station")
-      .populate("Destination_Station");
+  const trips = await tripsModel
+    .find()
+    .populate({
+      path: "Vehicle_ID",
+      populate: { path: "Organization_ID" },
+    })
+    .populate("Boarding_Station")
+    .populate("Destination_Station");
 
-    if (!trips || trips.length === 0) {
-      return res.status(204).json({
-        message: "Success",
-        data: "No data Found",
-      });
-    }
-
-    const tripsWithSeats = await Promise.all(
-      trips.map(async (trip) => {
-        const seats = await seatsModel.find({
-          Vehicle_ID: trip.Vehicle_ID._id,
-        });
-        return {
-          ...trip.toObject(),
-          Vehicle_ID: {
-            ...trip.Vehicle_ID.toObject(),
-            Seats: seats,
-          },
-        };
-      })
-    );
-
-    res.status(200).json({
+  if (!trips || trips.length === 0) {
+    return res.status(204).json({
       message: "Success",
-      data: tripsWithSeats,
+      data: "No data Found",
     });
-    return;
-  } else if (role === "superAdmin") {
-    const trips = await tripsModel
-      .find()
-      .populate({
-        path: "Vehicle_ID",
-        populate: { path: "Organization_ID" },
-      })
-      .populate("Boarding_Station")
-      .populate("Destination_Station");
-
-    if (!trips || trips.length === 0) {
-      return res.status(204).json({
-        message: "Success",
-        data: "No data Found",
-      });
-    }
-
-    const tripsWithSeats = await Promise.all(
-      trips.map(async (trip) => {
-        const seats = await seatsModel.find({
-          Vehicle_ID: trip.Vehicle_ID._id,
-        });
-        return {
-          ...trip.toObject(),
-          Vehicle_ID: {
-            ...trip.Vehicle_ID.toObject(),
-            Seats: seats,
-          },
-        };
-      })
-    );
-
-    res.status(200).json({
-      message: "Success",
-      data: tripsWithSeats,
-    });
-    return;
   }
+
+  const tripsWithSeats = await Promise.all(
+    trips.map(async (trip) => {
+      const seats = await seatsModel.find({
+        Vehicle_ID: trip.Vehicle_ID._id,
+      });
+      return {
+        ...trip.toObject(),
+        Vehicle_ID: {
+          ...trip.Vehicle_ID.toObject(),
+          Seats: seats,
+        },
+      };
+    })
+  );
+
+  res.status(200).json({
+    message: "Success",
+    data: tripsWithSeats,
+  });
+  return;
 });
 
 export const addTrips = catchError(async (req, res, next) => {

@@ -18,38 +18,18 @@ export const getVehicle = catchError(async (req, res, next) => {
 });
 
 export const getVehicles = catchError(async (req, res, next) => {
-  const token = req.headers.authorization.split(" ")[1];
-  let Organization_ID = tokenUtil.verifyAndExtract(token).orgId;
-  let role = tokenUtil.verifyAndExtract(token).userRole;
-  if (role === "orgAdmin") {
-    const vehicles = await vehiclesModel
-      .find({ Organization_ID })
-      .populate("Organization_ID");
-    if (vehicles)
-      res.status(200).json({
-        message: "Success",
-        data: vehicles,
-      });
-    else
-      res.status(204).json({
-        message: "Success",
-        data: "No data Found",
-      });
-    return;
-  } else if (role === "superAdmin") {
-    const vehicles = await vehiclesModel.find().populate("Organization_ID");
-    if (vehicles)
-      res.status(200).json({
-        message: "Success",
-        data: vehicles,
-      });
-    else
-      res.status(204).json({
-        message: "Success",
-        data: "No data Found",
-      });
-    return;
-  }
+  const vehicles = await vehiclesModel.find().populate("Organization_ID");
+  if (vehicles)
+    res.status(200).json({
+      message: "Success",
+      data: vehicles,
+    });
+  else
+    res.status(204).json({
+      message: "Success",
+      data: "No data Found",
+    });
+  return;
 });
 
 export const addVehicles = catchError(async (req, res, next) => {

@@ -70,7 +70,7 @@ export const getHistory = catchError(async (req, res, next) => {
       });
     }
     return;
-  } else if (role === "superAdmin") {
+  } else {
     const tickets = await ticketModel
       .find()
       .populate({
@@ -92,32 +92,6 @@ export const getHistory = catchError(async (req, res, next) => {
         message: "Success",
         data: "No data Found",
       });
-  } else if (role === "orgAdmin") {
-    const tickets = await ticketModel
-      .find({ Organization_ID: tokenUtil.verifyAndExtract(token).orgId })
-      .populate({
-        path: "Trip_ID",
-        populate: [
-          { path: "Boarding_Station" },
-          { path: "Destination_Station" },
-          { path: "Organization_ID" },
-        ],
-      })
-      .populate("Seat_Number");
-    if (tickets) {
-      res.status(200).json({
-        message: "Success",
-        data: tickets,
-      });
-    } else
-      res.status(204).json({
-        message: "Success",
-        data: "No data Found",
-      });
-  } else {
-    res.status(403).json({
-      message: "Unauthorized",
-    });
   }
 });
 

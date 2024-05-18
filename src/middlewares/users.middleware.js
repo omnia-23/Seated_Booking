@@ -308,7 +308,7 @@ export const getAdminByOrgID = async (req, res) => {
         data: superadmin,
       });
     } else {
-      constadmin = await User.findOne({
+      const admin = await User.findOne({
         OrganizationID: req.params.id,
       });
       // console.log(admin);

@@ -238,10 +238,12 @@ export const deleteTicket = catchError(async (req, res, next) => {
   const token = req.headers.authorization.split(" ")[1];
   const ticket = await ticketModel.findById(id);
   if (ticket) {
-    if (tokenUtil.verifyAndExtract(token).userId !== ticket.User_ID)
+    if (tokenUtil.verifyAndExtract(token).userId !== ticket.User_ID) {
       res.status(401).json({
         message: "unauthorized",
       });
+      return;
+    }
     await seatsModel.findByIdAndUpdate(
       ticket.Seat_Number,
       {

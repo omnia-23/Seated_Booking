@@ -291,7 +291,7 @@ export const getAdminByOrgID = async (req, res) => {
         data: "User does not have permission",
       });
     }
-    if (IsSuperAdmin && HisOrg) {
+    if (IsSuperAdmin) {
       console.log("super admin condition");
       const superadmin = await User.findById(userId);
       console.log(superadmin);
@@ -308,7 +308,7 @@ export const getAdminByOrgID = async (req, res) => {
         data: superadmin,
       });
     } else {
-      const admin = await User.findOne({
+      constadmin = await User.findOne({
         OrganizationID: req.params.id,
       });
       // console.log(admin);
